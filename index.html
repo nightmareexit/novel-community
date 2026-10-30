@@ -241,14 +241,14 @@
 <body>
 
 <nav>
-    <button class="nav-btn active" onclick="switchMainTab('home')">ホーム</button>
-    <button class="nav-btn" onclick="switchMainTab('create')">作成</button>
-    <button class="nav-btn" onclick="switchMainTab('profile')">プロフィール</button>
-    <button class="nav-btn" onclick="switchMainTab('ranking')">トップ記事</button>
-    <button class="nav-btn" onclick="switchMainTab('info')">運営情報</button>
-    <button class="nav-btn" onclick="switchMainTab('news')">お知らせ</button>
-    <button class="nav-btn" onclick="switchMainTab('faq')">Q&A</button>
-    <button class="nav-btn" onclick="switchMainTab('contact')">お問い合わせ</button>
+    <button class="nav-btn active" onclick="switchMainTab('home', this)">ホーム</button>
+    <button class="nav-btn" onclick="switchMainTab('create', this)">作成</button>
+    <button class="nav-btn" onclick="switchMainTab('profile', this)">プロフィール</button>
+    <button class="nav-btn" onclick="switchMainTab('ranking', this)">トップ記事</button>
+    <button class="nav-btn" onclick="switchMainTab('info', this)">運営情報</button>
+    <button class="nav-btn" onclick="switchMainTab('news', this)">お知らせ</button>
+    <button class="nav-btn" onclick="switchMainTab('faq', this)">Q&A</button>
+    <button class="nav-btn" onclick="switchMainTab('contact', this)">お問い合わせ</button>
 </nav>
 
 <div class="container">
@@ -436,12 +436,13 @@
 <script>
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     updateAuthorInputs();
+    updateProfileView(); // 起動時に状態を反映
 
-    function switchMainTab(tabId) {
+    function switchMainTab(tabId, btnElement) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
 
-        event.currentTarget.classList.add('active');
+        if (btnElement) btnElement.classList.add('active');
         document.getElementById('section-' + tabId).classList.add('active');
         
         if (tabId === 'home') fetchPosts();
@@ -461,7 +462,6 @@
         }
     }
 
-    // ログイン・新規登録画面の切り替え
     function switchAuthTab(type) {
         const btns = document.querySelectorAll('#authContainer .sub-tab-btn');
         btns.forEach(b => b.classList.remove('active'));
@@ -512,7 +512,7 @@
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
-                updateProfileView();
+                updateProfileView(); // 強制的にプロフィール画面を描画
             } else {
                 alert('エラー: ' + (result.error || '登録に失敗しました'));
             }
@@ -544,7 +544,7 @@
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
-                updateProfileView();
+                updateProfileView(); // 強制的にプロフィール画面を描画
             } else {
                 alert('エラー: ' + (result.error || 'ログインに失敗しました'));
             }
@@ -553,12 +553,12 @@
         }
     }
 
-    // Googleログイン（簡易シミュレーション ＆ 連携）
+    // Googleログイン
     async function handleGoogleLogin() {
         const googleName = prompt('Googleアカウント名を入力してください（シミュレーション用）:', 'Googleユーザー');
         if (!googleName) return;
 
-        const googleId = 'google_' + Date.now(); // ユニークなGoogle IDを生成
+        const googleId = 'google_' + Date.now();
 
         try {
             const res = await fetch('/api/auth?action=google-login', {
@@ -573,7 +573,7 @@
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
-                updateProfileView();
+                updateProfileView(); // 強制的にプロフィール画面を描画
             } else {
                 alert('エラー: ' + (result.error || 'Googleログインに失敗しました'));
             }
@@ -604,8 +604,9 @@
             authContainer.style.display = 'block';
             profileContainer.style.display = 'none';
         } else {
-            authContainer.style.display = 'none';
-            profileContainer.style.display = 'block';
+            authContainer.style.display = 'block'; // プロフィールタブ内を表示
+            authContainer.style.display = 'none';  // ログイン・登録フォームを非表示
+            profileContainer.style.display = 'block'; // マイページを表示
 
             document.getElementById('profileName').textContent = currentUser.username;
             document.getElementById('profileAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
@@ -730,7 +731,7 @@
 
     document.getElementById('novelForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser) { alert('投稿するにはログインしてください！'); return; }
+        if (!currentUser) { alert('投稿するにはログインした状態にしてください！'); return; }
         const data = {
             type: 'novel',
             title: document.getElementById('novel_title').value,
