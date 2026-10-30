@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小説詳細 - 創作・キャラクター投稿コミュニティ</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        nav { background: #2c3e50; color: white; padding: 10px; display: flex; overflow-x: auto; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; text-decoration: none; }
+        .nav-btn:hover { background: #3498db; }
+        .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 10px; margin-top: 0; }
+        .badge-novel { background: #9b59b6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .novel-content { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e1e4e8; line-height: 1.8; white-space: pre-wrap; font-size: 15px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-btn">ホーム</a>
+    <a href="/create" class="nav-btn">作成</a>
+    <a href="/profile" class="nav-btn">プロフィール</a>
+</nav>
+
+<div class="container">
+    <a href="/" class="nav-btn" style="background:#7f8c8d; display:inline-block; margin-bottom:15px; text-decoration:none;">← ホームに戻る</a>
+    
+    <div id="novelDetailContainer">
+        <p style="text-align:center; color:#777;">読み込み中...</p>
+    </div>
+</div>
+
+<script>
+    // URLのパスから小説IDを取得する
+    const pathParts = window.location.pathname.split('/');
+    const novelId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+    async function fetchNovelDetail() {
+        const container = document.getElementById('novelDetailContainer');
+        if (!novelId || isNaN(novelId)) {
+            container.innerHTML = '<p style="color:red; text-align:center;">無効な小説IDです。</p>';
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/detail?type=post&id=${novelId}`);
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                container.innerHTML = `<p style="color:red; text-align:center;">${result.error || '小説が見つかりませんでした。'}</p>`;
+                return;
+            }
+
+            const post = result.post;
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span class="badge-novel">小説・シナリオ</span>
+                    <span style="font-size: 13px; color: #666;">作者: <a href="/user/${post.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${post.author}</a> (投稿ID: ${post.id})</span>
+                </div>
+                <h2>${post.title}</h2>
+                <div class="novel-content">${post.content}</div>
+                <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right;">投稿日時: ${post.created_at || '不明'}</div>
+            `;
+        } catch (err) {
+            container.innerHTML = '<p style="color:red; text-align:center;">データの取得中に通信エラーが発生しました。</p>';
+        }
+    }
+
+    fetchNovelDetail();
+</script>
+
+</body>
+</html>
