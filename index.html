@@ -114,7 +114,7 @@
         .row .form-group {
             flex: 1;
         }
-        button[type="submit"] {
+        button[type="submit"], .btn-action {
             width: 100%;
             background: #3498db;
             color: white;
@@ -124,9 +124,17 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
         }
-        button[type="submit"]:hover {
+        button[type="submit"]:hover, .btn-action:hover {
             background: #2980b9;
+        }
+        .btn-google {
+            background: #db4437 !important;
+            margin-top: 10px;
+        }
+        .btn-google:hover {
+            background: #c23321 !important;
         }
         .skill-row {
             display: flex;
@@ -206,7 +214,6 @@
             line-height: 1.6;
             font-size: 14px;
         }
-        /* pixiv風プロフィールヘッダー */
         .pixiv-profile-header {
             background: linear-gradient(135deg, #3498db, #9b59b6);
             color: white;
@@ -267,8 +274,8 @@
                     <input type="text" id="char_title" required placeholder="例：アルト・ローウェル">
                 </div>
                 <div class="form-group">
-                    <label>作者名</label>
-                    <input type="text" id="char_author" required placeholder="例：アイデン">
+                    <label>作者名（自動入力）</label>
+                    <input type="text" id="char_author" readonly placeholder="ログインしてください">
                 </div>
             </div>
             <div class="row">
@@ -323,8 +330,8 @@
                     <input type="text" id="novel_title" required placeholder="例：星降る夜の物語">
                 </div>
                 <div class="form-group">
-                    <label>作者名</label>
-                    <input type="text" id="novel_author" required placeholder="例：アイデン">
+                    <label>作者名（自動入力）</label>
+                    <input type="text" id="novel_author" readonly placeholder="ログインしてください">
                 </div>
             </div>
             <div class="form-group">
@@ -335,23 +342,50 @@
         </form>
     </div>
 
-    <!-- 3. プロフィール ＆ ログイン画面 -->
+    <!-- 3. プロフィール ＆ 認証画面 -->
     <div id="section-profile" class="section">
         <div id="authContainer">
-            <h2>🔑 ログイン / 新規登録</h2>
-            <div class="info-box" style="margin-bottom: 20px;">
-                <p>ユーザー名を入力してログイン、または新しくアカウントを作成してください。</p>
-                <div class="form-group" style="margin-top: 15px;">
+            <div class="sub-tab-container">
+                <button class="sub-tab-btn active" onclick="switchAuthTab('login')">🔑 ログイン</button>
+                <button class="sub-tab-btn" onclick="switchAuthTab('signup')">📝 新規登録</button>
+            </div>
+
+            <!-- ログインフォーム -->
+            <div id="loginFormSection" class="form-section active">
+                <h2>ログイン</h2>
+                <div class="form-group">
+                    <label>ユーザー名 または ID</label>
+                    <input type="text" id="loginId" placeholder="例：iden または 1">
+                </div>
+                <div class="form-group">
+                    <label>パスワード</label>
+                    <input type="password" id="loginPassword" placeholder="パスワードを入力">
+                </div>
+                <button type="button" class="btn-action" onclick="handleLogin()">ログインする</button>
+                
+                <hr style="margin: 20px 0; border:0; border-top:1px solid #ddd;">
+                <button type="button" class="btn-action btn-google" onclick="handleGoogleLogin()">🌐 Googleアカウントでログイン</button>
+            </div>
+
+            <!-- 新規登録フォーム -->
+            <div id="signupFormSection" class="form-section">
+                <h2>新規登録</h2>
+                <div class="form-group">
                     <label>ユーザー名</label>
-                    <input type="text" id="authUsername" placeholder="例：iden (「iden」で登録すると君主バッジがつきます)">
+                    <input type="text" id="signupUsername" placeholder="使いたいユーザー名 (例：iden)">
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button type="button" onclick="handleAuth('login')" style="background: #3498db; flex: 1; padding: 10px; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">ログイン</button>
-                    <button type="button" onclick="handleAuth('signup')" style="background: #2ecc71; flex: 1; padding: 10px; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">新規登録</button>
+                <div class="form-group">
+                    <label>パスワード</label>
+                    <input type="password" id="signupPassword" placeholder="パスワードを設定">
                 </div>
+                <button type="button" class="btn-action" style="background: #2ecc71;" onclick="handleSignup()">アカウントを作成する</button>
+                
+                <hr style="margin: 20px 0; border:0; border-top:1px solid #ddd;">
+                <button type="button" class="btn-action btn-google" onclick="handleGoogleLogin()">🌐 Googleアカウントで登録・ログイン</button>
             </div>
         </div>
 
+        <!-- ログイン後のpixiv風プロフィール -->
         <div id="profileContainer" style="display: none;">
             <div class="pixiv-profile-header">
                 <div class="pixiv-avatar" id="profileAvatar">I</div>
@@ -382,13 +416,13 @@
     <!-- 6. お知らせ -->
     <div id="section-news" class="section">
         <h2>📢 お知らせ</h2>
-        <div class="info-box"><p><b>[2026/10/30]</b> ログイン機能＆pixiv風プロフィールが実装されました！</p></div>
+        <div class="info-box"><p><b>[2026/10/30]</b> ログイン・新規登録・Google連携が実装されました！</p></div>
     </div>
 
     <!-- 7. Q&A -->
     <div id="section-faq" class="section">
         <h2>❓ Q&A</h2>
-        <div class="info-box"><p><b>Q. ログインすると何ができる？</b><br>A. マイページで自分の投稿を確認したり、専用バッジがつきます！</p></div>
+        <div class="info-box"><p><b>Q. ログインするとどうなる？</b><br>A. 自分の作品が管理できたり、専用バッジが付きます！</p></div>
     </div>
 
     <!-- 8. お問い合わせ -->
@@ -401,8 +435,8 @@
 
 <script>
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+    updateAuthorInputs();
 
-    // タブ切り替え
     function switchMainTab(tabId) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
@@ -427,6 +461,22 @@
         }
     }
 
+    // ログイン・新規登録画面の切り替え
+    function switchAuthTab(type) {
+        const btns = document.querySelectorAll('#authContainer .sub-tab-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        document.getElementById('loginFormSection').classList.remove('active');
+        document.getElementById('signupFormSection').classList.remove('active');
+
+        if (type === 'login') {
+            btns[0].classList.add('active');
+            document.getElementById('loginFormSection').classList.add('active');
+        } else {
+            btns[1].classList.add('active');
+            document.getElementById('signupFormSection').classList.add('active');
+        }
+    }
+
     function addSkillField(value = '') {
         const container = document.getElementById('skillsContainer');
         const div = document.createElement('div');
@@ -439,40 +489,93 @@
     }
     addSkillField();
 
-    // ログイン・新規登録の実行
-    async function handleAuth(action) {
-        const username = document.getElementById('authUsername').value.trim();
-        if (!username) {
-            alert('ユーザー名を入力してください！');
+    // 新規登録処理
+    async function handleSignup() {
+        const username = document.getElementById('signupUsername').value.trim();
+        const password = document.getElementById('signupPassword').value.trim();
+
+        if (!username || !password) {
+            alert('ユーザー名とパスワードを入力してください！');
             return;
         }
 
         try {
-            const res = await fetch(`/api/auth?action=${action}`, {
+            const res = await fetch('/api/auth?action=signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({ username, password })
             });
             const result = await res.json();
 
             if (res.ok) {
-                alert(result.message || '成功しました！');
-                if (action === 'login') {
-                    currentUser = result.user;
-                } else {
-                    // 登録直後に自動ログイン扱いにするため再取得
-                    const loginRes = await fetch(`/api/auth?action=login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username })
-                    });
-                    const loginResult = await loginRes.json();
-                    currentUser = loginResult.user;
-                }
+                alert(result.message);
+                currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateAuthorInputs();
                 updateProfileView();
             } else {
-                alert('エラー: ' + (result.error || '処理に失敗しました'));
+                alert('エラー: ' + (result.error || '登録に失敗しました'));
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    // ログイン処理
+    async function handleLogin() {
+        const loginId = document.getElementById('loginId').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+
+        if (!loginId || !password) {
+            alert('ユーザー名/IDとパスワードを入力してください！');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ loginId, password })
+            });
+            const result = await res.json();
+
+            if (res.ok) {
+                alert('ログイン成功！おかえりなさい、' + result.user.username + 'さん！');
+                currentUser = result.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateAuthorInputs();
+                updateProfileView();
+            } else {
+                alert('エラー: ' + (result.error || 'ログインに失敗しました'));
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    // Googleログイン（簡易シミュレーション ＆ 連携）
+    async function handleGoogleLogin() {
+        const googleName = prompt('Googleアカウント名を入力してください（シミュレーション用）:', 'Googleユーザー');
+        if (!googleName) return;
+
+        const googleId = 'google_' + Date.now(); // ユニークなGoogle IDを生成
+
+        try {
+            const res = await fetch('/api/auth?action=google-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ google_id: googleId, username: googleName })
+            });
+            const result = await res.json();
+
+            if (res.ok) {
+                alert('Googleアカウントでログインしました！');
+                currentUser = result.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateAuthorInputs();
+                updateProfileView();
+            } else {
+                alert('エラー: ' + (result.error || 'Googleログインに失敗しました'));
             }
         } catch (err) {
             alert('通信エラーが発生しました。');
@@ -482,11 +585,17 @@
     function logout() {
         currentUser = null;
         localStorage.removeItem('currentUser');
+        updateAuthorInputs();
         updateProfileView();
         alert('ログアウトしました');
     }
 
-    // プロフィール画面の表示更新
+    function updateAuthorInputs() {
+        const name = currentUser ? currentUser.username : '';
+        document.getElementById('char_author').value = name;
+        document.getElementById('novel_author').value = name;
+    }
+
     function updateProfileView() {
         const authContainer = document.getElementById('authContainer');
         const profileContainer = document.getElementById('profileContainer');
@@ -502,7 +611,6 @@
             document.getElementById('profileAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
             document.getElementById('profileRole').textContent = `権限: ${currentUser.role || 'user'} (ID: ${currentUser.id})`;
 
-            // バッジ表示
             const badgesDiv = document.getElementById('profileBadges');
             badgesDiv.innerHTML = '';
             if (currentUser.badges) {
@@ -520,7 +628,6 @@
         }
     }
 
-    // 自分の投稿一覧取得
     async function fetchMyPosts(username) {
         const myPostsList = document.getElementById('myPostsList');
         myPostsList.innerHTML = '<p style="text-align:center; color:#777;">読み込み中...</p>';
@@ -553,7 +660,6 @@
         }
     }
 
-    // 投稿一覧取得（ホーム用）
     async function fetchPosts() {
         const postsList = document.getElementById('postsList');
         postsList.innerHTML = '<p style="text-align:center; color:#777;">読み込み中...</p>';
@@ -599,9 +705,9 @@
         }
     }
 
-    // 投稿処理
     document.getElementById('charForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) { alert('投稿するにはログインしてください！'); return; }
         const skillInputs = document.querySelectorAll('.skill-input');
         const skillsArr = [];
         skillInputs.forEach(input => { if (input.value.trim() !== '') skillsArr.push(input.value.trim()); });
@@ -609,7 +715,7 @@
         const data = {
             type: 'character',
             title: document.getElementById('char_title').value,
-            author: currentUser ? currentUser.username : document.getElementById('char_author').value,
+            author: currentUser.username,
             content: document.getElementById('char_content').value,
             gender: document.getElementById('gender').value,
             age: document.getElementById('age').value,
@@ -624,10 +730,11 @@
 
     document.getElementById('novelForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!currentUser) { alert('投稿するにはログインしてください！'); return; }
         const data = {
             type: 'novel',
             title: document.getElementById('novel_title').value,
-            author: currentUser ? currentUser.username : document.getElementById('novel_author').value,
+            author: currentUser.username,
             content: document.getElementById('novel_content').value
         };
         sendPost(data, document.getElementById('novelForm'));
@@ -643,6 +750,7 @@
             if (res.ok) {
                 alert('投稿が成功しました！');
                 formElement.reset();
+                updateAuthorInputs();
                 switchMainTabFirst('home');
             } else {
                 alert('投稿に失敗しました');
