@@ -12,7 +12,6 @@
             padding: 0;
             color: #333;
         }
-        /* ヘッダー・ナビゲーションタブ */
         nav {
             background: #2c3e50;
             color: white;
@@ -54,14 +53,12 @@
             padding-bottom: 8px;
             margin-top: 0;
         }
-        /* コンテンツセクションの切り替え */
         .section {
             display: none;
         }
         .section.active {
             display: block;
         }
-        /* 作成タブ内のサブタブ */
         .sub-tab-container {
             display: flex;
             margin-bottom: 20px;
@@ -181,6 +178,17 @@
         .badge-novel {
             background: #9b59b6;
         }
+        .user-badge {
+            display: inline-block;
+            background: #f39c12;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
         .char-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -198,11 +206,33 @@
             line-height: 1.6;
             font-size: 14px;
         }
+        /* pixiv風プロフィールヘッダー */
+        .pixiv-profile-header {
+            background: linear-gradient(135deg, #3498db, #9b59b6);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .pixiv-avatar {
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            color: #333;
+            font-size: 32px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 10px auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
 
-<!-- 上部ナビゲーションタブ -->
 <nav>
     <button class="nav-btn active" onclick="switchMainTab('home')">ホーム</button>
     <button class="nav-btn" onclick="switchMainTab('create')">作成</button>
@@ -216,13 +246,13 @@
 
 <div class="container">
 
-    <!-- 1. ホーム（投稿一覧） -->
+    <!-- 1. ホーム -->
     <div id="section-home" class="section active">
         <h2>🏠 ホーム（タイムライン）</h2>
         <div id="postsList">読み込み中...</div>
     </div>
 
-    <!-- 2. 作成（キャラシ・小説タブ） -->
+    <!-- 2. 作成 -->
     <div id="section-create" class="section">
         <h2>✍️ 作品・キャラクターを作成</h2>
         <div class="sub-tab-container">
@@ -230,7 +260,6 @@
             <button class="sub-tab-btn" onclick="switchSubTab('novel')">📖 小説を書く</button>
         </div>
 
-        <!-- キャラシフォーム -->
         <form id="charForm" class="form-section active">
             <div class="row">
                 <div class="form-group">
@@ -287,7 +316,6 @@
             <button type="submit">キャラクターを投稿する</button>
         </form>
 
-        <!-- 小説フォーム -->
         <form id="novelForm" class="form-section">
             <div class="row">
                 <div class="form-group">
@@ -307,62 +335,74 @@
         </form>
     </div>
 
-    <!-- 3. プロフィール -->
+    <!-- 3. プロフィール ＆ ログイン画面 -->
     <div id="section-profile" class="section">
-        <h2>👤 プロフィール</h2>
-        <div class="info-box">
-            <p><b>ユーザー名:</b> ゲストさん</p>
-            <p><b>保有バッジ:</b> まだバッジはありません</p>
-            <p>ここに今後、自分が投稿した作品一覧やアカウント設定機能が入ります！</p>
+        <div id="authContainer">
+            <h2>🔑 ログイン / 新規登録</h2>
+            <div class="info-box" style="margin-bottom: 20px;">
+                <p>ユーザー名を入力してログイン、または新しくアカウントを作成してください。</p>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>ユーザー名</label>
+                    <input type="text" id="authUsername" placeholder="例：iden (「iden」で登録すると君主バッジがつきます)">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="button" onclick="handleAuth('login')" style="background: #3498db; flex: 1; padding: 10px; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">ログイン</button>
+                    <button type="button" onclick="handleAuth('signup')" style="background: #2ecc71; flex: 1; padding: 10px; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">新規登録</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="profileContainer" style="display: none;">
+            <div class="pixiv-profile-header">
+                <div class="pixiv-avatar" id="profileAvatar">I</div>
+                <h2 id="profileName" style="margin: 0; color: white; border: none;">ユーザー名</h2>
+                <p id="profileRole" style="font-size: 13px; opacity: 0.9; margin: 5px 0;">権限: 一般</p>
+                <div id="profileBadges" style="margin-top: 10px;"></div>
+            </div>
+            <div style="text-align: right; margin-bottom: 15px;">
+                <button onclick="logout()" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">ログアウト</button>
+            </div>
+            <h3>📁 あなたの投稿作品</h3>
+            <div id="myPostsList">読み込み中...</div>
         </div>
     </div>
 
     <!-- 4. トップ記事 -->
     <div id="section-ranking" class="section">
         <h2>🔥 トップ記事・人気作品</h2>
-        <div class="info-box">
-            <p>人気のキャラクターや小説のランキングがここに表示されます（準備中）</p>
-        </div>
+        <div class="info-box"><p>人気のランキング機能（準備中）</p></div>
     </div>
 
     <!-- 5. 運営情報 -->
     <div id="section-info" class="section">
         <h2>🛡️ 運営情報</h2>
-        <div class="info-box">
-            <p><b>管理者:</b> アイデン (idenDEV)</p>
-            <p>当コミュニティは、オリジナルキャラクターや小説を自由に投稿・共有するためのプラットフォームです。</p>
-        </div>
+        <div class="info-box"><p><b>管理者:</b> アイデン (idenDEV)</p></div>
     </div>
 
     <!-- 6. お知らせ -->
     <div id="section-news" class="section">
         <h2>📢 お知らせ</h2>
-        <div class="info-box">
-            <p><b>[2026/10/30]</b> コミュニティサイトがオープンしました！いあきゃら風のキャラシ投稿や技の複数追加に対応しています。</p>
-        </div>
+        <div class="info-box"><p><b>[2026/10/30]</b> ログイン機能＆pixiv風プロフィールが実装されました！</p></div>
     </div>
 
     <!-- 7. Q&A -->
     <div id="section-faq" class="section">
-        <h2>❓ Q&A（よくある質問）</h2>
-        <div class="info-box">
-            <p><b>Q. 投稿に費用はかかりますか？</b><br>A. 完全無料でご利用いただけます。</p>
-            <p><b>Q. 技は何個まで追加できますか？</b><br>A. 何個でも自由に追加可能です！</p>
-        </div>
+        <h2>❓ Q&A</h2>
+        <div class="info-box"><p><b>Q. ログインすると何ができる？</b><br>A. マイページで自分の投稿を確認したり、専用バッジがつきます！</p></div>
     </div>
 
     <!-- 8. お問い合わせ -->
     <div id="section-contact" class="section">
         <h2>✉️ お問い合わせ</h2>
-        <div class="info-box">
-            <p>不具合の報告やご要望は、開発者のSNSやオープンチャットまでお気軽にお知らせください！</p>
-        </div>
+        <div class="info-box"><p>不具合報告などはオープンチャットまで！</p></div>
     </div>
 
 </div>
 
 <script>
-    // メインタブ切り替え
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+    // タブ切り替え
     function switchMainTab(tabId) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
@@ -370,13 +410,10 @@
         event.currentTarget.classList.add('active');
         document.getElementById('section-' + tabId).classList.add('active');
         
-        // ホームを開いたときは投稿一覧を更新
-        if (tabId === 'home') {
-            fetchPosts();
-        }
+        if (tabId === 'home') fetchPosts();
+        if (tabId === 'profile') updateProfileView();
     }
 
-    // 作成タブ内のサブタブ切り替え
     function switchSubTab(type) {
         document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
@@ -390,7 +427,6 @@
         }
     }
 
-    // 技入力フィールドを動的に追加
     function addSkillField(value = '') {
         const container = document.getElementById('skillsContainer');
         const div = document.createElement('div');
@@ -401,9 +437,123 @@
         `;
         container.appendChild(div);
     }
-    addSkillField(); // 初期で1つ表示
+    addSkillField();
 
-    // 投稿一覧を取得してホームに表示
+    // ログイン・新規登録の実行
+    async function handleAuth(action) {
+        const username = document.getElementById('authUsername').value.trim();
+        if (!username) {
+            alert('ユーザー名を入力してください！');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/auth?action=${action}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const result = await res.json();
+
+            if (res.ok) {
+                alert(result.message || '成功しました！');
+                if (action === 'login') {
+                    currentUser = result.user;
+                } else {
+                    // 登録直後に自動ログイン扱いにするため再取得
+                    const loginRes = await fetch(`/api/auth?action=login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    });
+                    const loginResult = await loginRes.json();
+                    currentUser = loginResult.user;
+                }
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateProfileView();
+            } else {
+                alert('エラー: ' + (result.error || '処理に失敗しました'));
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        localStorage.removeItem('currentUser');
+        updateProfileView();
+        alert('ログアウトしました');
+    }
+
+    // プロフィール画面の表示更新
+    function updateProfileView() {
+        const authContainer = document.getElementById('authContainer');
+        const profileContainer = document.getElementById('profileContainer');
+
+        if (!currentUser) {
+            authContainer.style.display = 'block';
+            profileContainer.style.display = 'none';
+        } else {
+            authContainer.style.display = 'none';
+            profileContainer.style.display = 'block';
+
+            document.getElementById('profileName').textContent = currentUser.username;
+            document.getElementById('profileAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            document.getElementById('profileRole').textContent = `権限: ${currentUser.role || 'user'} (ID: ${currentUser.id})`;
+
+            // バッジ表示
+            const badgesDiv = document.getElementById('profileBadges');
+            badgesDiv.innerHTML = '';
+            if (currentUser.badges) {
+                currentUser.badges.split(',').forEach(b => {
+                    const span = document.createElement('span');
+                    span.className = 'user-badge';
+                    span.textContent = b.trim();
+                    badgesDiv.appendChild(span);
+                });
+            } else {
+                badgesDiv.innerHTML = '<span style="font-size:12px; opacity:0.8;">バッジなし</span>';
+            }
+
+            fetchMyPosts(currentUser.username);
+        }
+    }
+
+    // 自分の投稿一覧取得
+    async function fetchMyPosts(username) {
+        const myPostsList = document.getElementById('myPostsList');
+        myPostsList.innerHTML = '<p style="text-align:center; color:#777;">読み込み中...</p>';
+        try {
+            const res = await fetch('/api/posts');
+            const posts = await res.json();
+            const myPosts = posts.filter(p => p.author === username);
+
+            if (myPosts.length === 0) {
+                myPostsList.innerHTML = '<p style="text-align:center; color:#777;">まだ投稿した作品はありません。</p>';
+                return;
+            }
+
+            myPostsList.innerHTML = '';
+            myPosts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    <div class="post-header">
+                        <span><span class="badge ${post.type === 'novel' ? 'badge-novel' : ''}">${post.type === 'character' ? 'キャラシ' : '小説'}</span></span>
+                        <span>${post.created_at || ''}</span>
+                    </div>
+                    <h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
+                    <p style="white-space: pre-wrap; font-size:14px; background:#fff; padding:10px; border-radius:4px; border:1px solid #eee;">${post.content.substring(0, 50)}...</p>
+                `;
+                myPostsList.appendChild(card);
+            });
+        } catch (err) {
+            myPostsList.innerHTML = '<p style="color:red; text-align:center;">データの取得に失敗しました。</p>';
+        }
+    }
+
+    // 投稿一覧取得（ホーム用）
     async function fetchPosts() {
         const postsList = document.getElementById('postsList');
         postsList.innerHTML = '<p style="text-align:center; color:#777;">読み込み中...</p>';
@@ -412,7 +562,7 @@
             const posts = await res.json();
             
             if (posts.length === 0) {
-                postsList.innerHTML = '<p style="text-align:center; color:#777;">まだ投稿がありません。「作成」タブから最初の投稿をしてみよう！</p>';
+                postsList.innerHTML = '<p style="text-align:center; color:#777;">まだ投稿がありません。</p>';
                 return;
             }
 
@@ -420,28 +570,19 @@
             posts.forEach(post => {
                 const card = document.createElement('div');
                 card.className = 'post-card';
-                
                 let detailsHtml = '';
                 if (post.type === 'character') {
-                    let skillsList = '-';
-                    if (post.skills) {
-                        const skillsArray = post.skills.split(',');
-                        skillsList = skillsArray.map(s => `<span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:4px; display:inline-block; margin-bottom:4px;">${s.trim()}</span>`).join('');
-                    }
-
+                    let skillsList = post.skills ? post.skills.split(',').map(s => `<span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:4px; display:inline-block; margin-bottom:4px;">${s.trim()}</span>`).join('') : '-';
                     detailsHtml = `
                         <div class="char-details">
                             <div><b>性別:</b> ${post.gender || '-'}</div>
                             <div><b>年齢:</b> ${post.age || '-'}</div>
                             <div><b>職業:</b> ${post.occupation || '-'}</div>
                             <div><b>出身:</b> ${post.origin || '-'}</div>
-                            <div><b>外見:</b> ${post.hair_color || '-'}</div>
-                            <div><b>体格:</b> ${post.height || '-'}</div>
                         </div>
                         <div style="font-size:13px; margin-bottom:5px;"><b>技・能力:</b><br>${skillsList}</div>
                     `;
                 }
-
                 card.innerHTML = `
                     <div class="post-header">
                         <span><span class="badge ${post.type === 'novel' ? 'badge-novel' : ''}">${post.type === 'character' ? 'キャラシ' : '小説'}</span> 作者: ${post.author}</span>
@@ -458,19 +599,17 @@
         }
     }
 
-    // キャラシ送信
+    // 投稿処理
     document.getElementById('charForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const skillInputs = document.querySelectorAll('.skill-input');
         const skillsArr = [];
-        skillInputs.forEach(input => {
-            if (input.value.trim() !== '') skillsArr.push(input.value.trim());
-        });
+        skillInputs.forEach(input => { if (input.value.trim() !== '') skillsArr.push(input.value.trim()); });
 
         const data = {
             type: 'character',
             title: document.getElementById('char_title').value,
-            author: document.getElementById('char_author').value,
+            author: currentUser ? currentUser.username : document.getElementById('char_author').value,
             content: document.getElementById('char_content').value,
             gender: document.getElementById('gender').value,
             age: document.getElementById('age').value,
@@ -480,24 +619,20 @@
             height: document.getElementById('height').value,
             skills: skillsArr.join(', ')
         };
-
         sendPost(data, document.getElementById('charForm'));
     });
 
-    // 小説送信
     document.getElementById('novelForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = {
             type: 'novel',
             title: document.getElementById('novel_title').value,
-            author: document.getElementById('novel_author').value,
+            author: currentUser ? currentUser.username : document.getElementById('novel_author').value,
             content: document.getElementById('novel_content').value
         };
-
         sendPost(data, document.getElementById('novelForm'));
     });
 
-    // 共通送信処理
     async function sendPost(data, formElement) {
         try {
             const res = await fetch('/api/posts', {
@@ -505,33 +640,26 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            const result = await res.json();
             if (res.ok) {
                 alert('投稿が成功しました！');
                 formElement.reset();
-                if(data.type === 'character') {
-                    document.getElementById('skillsContainer').innerHTML = '';
-                    addSkillField();
-                }
                 switchMainTabFirst('home');
             } else {
-                alert('エラー: ' + (result.error || '投稿に失敗しました'));
+                alert('投稿に失敗しました');
             }
         } catch (err) {
             alert('通信エラーが発生しました。');
         }
     }
 
-    // 投稿後にホームへ切り替える補助関数
     function switchMainTabFirst(tabId) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-        document.querySelectorAll('.nav-btn')[0].classList.add('active'); // ホームボタン
+        document.querySelectorAll('.nav-btn')[0].classList.add('active');
         document.getElementById('section-home').classList.add('active');
         fetchPosts();
     }
 
-    // 初期読み込み
     fetchPosts();
 </script>
 
