@@ -24,9 +24,23 @@ export async function onRequest(context) {
         return Response.json({ error: "必須項目が抜けています" }, { status: 400 });
       }
 
-      await env.DB.prepare(
-        "INSERT INTO posts (type, title, author, content) VALUES (?, ?, ?, ?)"
-      ).bind(data.type, data.title, data.author, data.content).run();
+      // キャラシ詳細項目に対応した INSERT 文
+      await env.DB.prepare(`
+        INSERT INTO posts (type, title, author, content, gender, age, occupation, hair_color, origin, height, skills) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        data.type || 'novel',
+        data.title,
+        data.author,
+        data.content,
+        data.gender || null,
+        data.age || null,
+        data.occupation || null,
+        data.hair_color || null,
+        data.origin || null,
+        data.height || null,
+        data.skills || null
+      ).run();
 
       return Response.json({ success: true });
     } catch (err) {
