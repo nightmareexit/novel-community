@@ -24,6 +24,35 @@
             text-align: center;
             color: #2c3e50;
         }
+        /* タブのスタイル */
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e4e8;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: #f1f2f6;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            border: none;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: #3498db;
+            color: white;
+            border-radius: 6px 6px 0 0;
+        }
+        .form-section {
+            display: none;
+        }
+        .form-section.active {
+            display: block;
+        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -33,7 +62,7 @@
             font-weight: bold;
             font-size: 14px;
         }
-        input, select, textarea {
+        input, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -43,7 +72,7 @@
         }
         textarea {
             resize: vertical;
-            height: 80px;
+            height: 120px;
         }
         .row {
             display: flex;
@@ -67,6 +96,26 @@
         button:hover {
             background: #2980b9;
         }
+        .skill-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .skill-row input {
+            flex: 1;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            width: auto;
+            padding: 0 12px;
+        }
+        .btn-secondary {
+            background: #2ecc71;
+            font-size: 14px;
+            padding: 8px;
+            margin-bottom: 15px;
+            width: auto;
+        }
         .post-card {
             background: #fafafa;
             border: 1px solid #e1e4e8;
@@ -88,6 +137,9 @@
             border-radius: 4px;
             font-size: 10px;
         }
+        .badge-novel {
+            background: #9b59b6;
+        }
         .char-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -105,73 +157,91 @@
 <div class="container">
     <h1>✨ 創作コミュニティ ✨</h1>
 
-    <!-- 投稿フォーム -->
+    <!-- 投稿フォーム切り替えタブ -->
     <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-        <h2>作品・キャラクターを投稿する</h2>
-        <form id="postForm">
-            <div class="form-group">
-                <label>投稿の種類</label>
-                <select id="type" required>
-                    <option value="character">キャラクター（キャラシ）</option>
-                    <option value="novel">小説・ストーリー</option>
-                </select>
-            </div>
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('character')">👤 キャラシを作る</button>
+            <button class="tab-btn" onclick="switchTab('novel')">📖 小説を書く</button>
+        </div>
 
+        <!-- ① キャラシ投稿フォーム -->
+        <form id="charForm" class="form-section active">
+            <h2>キャラクターシート作成</h2>
             <div class="row">
                 <div class="form-group">
-                    <label>タイトル / キャラ名</label>
-                    <input type="text" id="title" required placeholder="例：アルト・ローウェル">
+                    <label>キャラクター名</label>
+                    <input type="text" id="char_title" required placeholder="例：アルト・ローウェル">
                 </div>
                 <div class="form-group">
                     <label>作者名</label>
-                    <input type="text" id="author" required placeholder="例：アイデン">
+                    <input type="text" id="char_author" required placeholder="例：アイデン">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>性別</label>
+                    <input type="text" id="gender" placeholder="例：男性">
+                </div>
+                <div class="form-group">
+                    <label>年齢</label>
+                    <input type="text" id="age" placeholder="例：16歳">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>職業</label>
+                    <input type="text" id="occupation" placeholder="例：魔法使い">
+                </div>
+                <div class="form-group">
+                    <label>出身</label>
+                    <input type="text" id="origin" placeholder="例：王都アストラル">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>髪色 / 瞳色</label>
+                    <input type="text" id="hair_color" placeholder="例：銀髪 / 青眼">
+                </div>
+                <div class="form-group">
+                    <label>身長 / 体重</label>
+                    <input type="text" id="height" placeholder="例：170cm / 55kg">
                 </div>
             </div>
 
-            <!-- いあきゃら風 詳細項目 -->
-            <div id="charFields">
-                <div class="row">
-                    <div class="form-group">
-                        <label>性別</label>
-                        <input type="text" id="gender" placeholder="例：男性 / 女子">
-                    </div>
-                    <div class="form-group">
-                        <label>年齢</label>
-                        <input type="text" id="age" placeholder="例：16歳">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>職業</label>
-                        <input type="text" id="occupation" placeholder="例：魔法使い / 学生">
-                    </div>
-                    <div class="form-group">
-                        <label>出身</label>
-                        <input type="text" id="origin" placeholder="例：王都アストラル">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <label>髪色 / 瞳色</label>
-                        <input type="text" id="hair_color" placeholder="例：銀髪 / 青眼">
-                    </div>
-                    <div class="form-group">
-                        <label>身長 / 体重</label>
-                        <input type="text" id="height" placeholder="例：170cm / 55kg">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>技・能力一覧</label>
-                    <input type="text" id="skills" placeholder="例：スターバースト、空間転移">
-                </div>
+            <!-- 技・能力 複数追加エリア -->
+            <div class="form-group">
+                <label>技・能力一覧</label>
+                <div id="skillsContainer"></div>
+                <button type="button" class="btn-secondary" onclick="addSkillField()">＋ 技・能力を追加</button>
             </div>
 
             <div class="form-group">
-                <label>本文 / 設定メモ</label>
-                <textarea id="content" required placeholder="小説の本文や、キャラクターの詳しい設定をここに書こう！"></textarea>
+                <label>設定・プロフィール詳細</label>
+                <textarea id="char_content" required placeholder="キャラクターのバックストーリーや性格などを書こう！"></textarea>
             </div>
 
-            <button type="submit">投稿する</button>
+            <button type="submit">キャラクターを投稿する</button>
+        </form>
+
+        <!-- ② 小説投稿フォーム -->
+        <form id="novelForm" class="form-section">
+            <h2>小説・ストーリー投稿</h2>
+            <div class="row">
+                <div class="form-group">
+                    <label>小説タイトル</label>
+                    <input type="text" id="novel_title" placeholder="例：星降る夜の物語">
+                </div>
+                <div class="form-group">
+                    <label>作者名</label>
+                    <input type="text" id="novel_author" placeholder="例：アイデン">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>小説本文</label>
+                <textarea id="novel_content" style="height: 200px;" placeholder="ここに小説の本文をたっぷり書こう！"></textarea>
+            </div>
+
+            <button type="submit" style="background: #9b59b6;">小説を投稿する</button>
         </form>
     </div>
 
@@ -181,7 +251,35 @@
 </div>
 
 <script>
-    const form = document.getElementById('postForm');
+    // タブ切り替え関数
+    function switchTab(type) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+
+        if (type === 'character') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('charForm').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('novelForm').classList.add('active');
+        }
+    }
+
+    // 技入力フィールドを動的に追加する関数
+    function addSkillField(value = '') {
+        const container = document.getElementById('skillsContainer');
+        const div = document.createElement('div');
+        div.className = 'skill-row';
+        div.innerHTML = `
+            <input type="text" class="skill-input" value="${value}" placeholder="例：スターバースト（威力：大）">
+            <button type="button" class="btn-danger" onclick="this.parentElement.remove()">削除</button>
+        `;
+        container.appendChild(div);
+    }
+
+    // 最初から入力欄を1つ出しておく
+    addSkillField();
+
     const postsList = document.getElementById('postsList');
 
     // 投稿一覧を取得して表示
@@ -202,6 +300,12 @@
                 
                 let detailsHtml = '';
                 if (post.type === 'character') {
+                    let skillsList = '-';
+                    if (post.skills) {
+                        const skillsArray = post.skills.split(',');
+                        skillsList = skillsArray.map(s => `<span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:4px; display:inline-block; margin-bottom:4px;">${s.trim()}</span>`).join('');
+                    }
+
                     detailsHtml = `
                         <div class="char-details">
                             <div><b>性別:</b> ${post.gender || '-'}</div>
@@ -211,13 +315,13 @@
                             <div><b>外見:</b> ${post.hair_color || '-'}</div>
                             <div><b>体格:</b> ${post.height || '-'}</div>
                         </div>
-                        <div style="font-size:13px; margin-bottom:5px;"><b>技・能力:</b> ${post.skills || 'なし'}</div>
+                        <div style="font-size:13px; margin-bottom:5px;"><b>技・能力:</b><br>${skillsList}</div>
                     `;
                 }
 
                 card.innerHTML = `
                     <div class="post-header">
-                        <span><span class="badge">${post.type === 'character' ? 'キャラシ' : '小説'}</span> 作者: ${post.author}</span>
+                        <span><span class="badge ${post.type === 'novel' ? 'badge-novel' : ''}">${post.type === 'character' ? 'キャラシ' : '小説'}</span> 作者: ${post.author}</span>
                         <span>${post.created_at || ''}</span>
                     </div>
                     <h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
@@ -231,35 +335,61 @@
         }
     }
 
-    // 新規投稿の送信
-    form.addEventListener('submit', async (e) => {
+    // キャラシ送信処理
+    document.getElementById('charForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const skillInputs = document.querySelectorAll('.skill-input');
+        const skillsArr = [];
+        skillInputs.forEach(input => {
+            if (input.value.trim() !== '') skillsArr.push(input.value.trim());
+        });
 
         const data = {
-            type: document.getElementById('type').value,
-            title: document.getElementById('title').value,
-            author: document.getElementById('author').value,
-            content: document.getElementById('content').value,
+            type: 'character',
+            title: document.getElementById('char_title').value,
+            author: document.getElementById('char_author').value,
+            content: document.getElementById('char_content').value,
             gender: document.getElementById('gender').value,
             age: document.getElementById('age').value,
             occupation: document.getElementById('occupation').value,
             hair_color: document.getElementById('hair_color').value,
             origin: document.getElementById('origin').value,
             height: document.getElementById('height').value,
-            skills: document.getElementById('skills').value
+            skills: skillsArr.join(', ')
         };
 
+        sendPost(data, document.getElementById('charForm'));
+    });
+
+    // 小説送信処理
+    document.getElementById('novelForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            type: 'novel',
+            title: document.getElementById('novel_title').value,
+            author: document.getElementById('novel_author').value,
+            content: document.getElementById('novel_content').value
+        };
+
+        sendPost(data, document.getElementById('novelForm'));
+    });
+
+    // 共通の送信関数
+    async function sendPost(data, formElement) {
         try {
             const res = await fetch('/api/posts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-
             const result = await res.json();
             if (res.ok) {
                 alert('投稿が成功しました！');
-                form.reset();
+                formElement.reset();
+                if(data.type === 'character') {
+                    document.getElementById('skillsContainer').innerHTML = '';
+                    addSkillField();
+                }
                 fetchPosts();
             } else {
                 alert('エラー: ' + (result.error || '投稿に失敗しました'));
@@ -267,7 +397,7 @@
         } catch (err) {
             alert('通信エラーが発生しました。');
         }
-    });
+    }
 
     // 初期読み込み
     fetchPosts();
