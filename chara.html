@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャラクター詳細 - 創作・キャラクター投稿コミュニティ</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        nav { background: #2c3e50; color: white; padding: 10px; display: flex; overflow-x: auto; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; text-decoration: none; }
+        .nav-btn:hover { background: #3498db; }
+        .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 8px; margin-top: 0; }
+        .badge { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .char-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 14px; background: #f0f3f6; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .content-box { background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee; line-height: 1.6; white-space: pre-wrap; font-size: 15px; }
+        .back-link { display: inline-block; margin-bottom: 15px; color: #3498db; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-btn">ホーム</a>
+    <a href="/create" class="nav-btn">作成</a>
+    <a href="/profile" class="nav-btn">プロフィール</a>
+</nav>
+
+<div class="container">
+    <a href="/" class="nav-btn" style="background:#7f8c8d; display:inline-block; margin-bottom:15px; text-decoration:none;">← ホームに戻る</a>
+    
+    <div id="detailContainer">
+        <p style="text-align:center; color:#777;">読み込み中...</p>
+    </div>
+</div>
+
+<script>
+    // URLのパス（例: /chara/1 なら "1" を取得する）
+    const pathParts = window.location.pathname.split('/');
+    const charaId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+    async function fetchCharaDetail() {
+        const container = document.getElementById('detailContainer');
+        if (!charaId || isNaN(charaId)) {
+            container.innerHTML = '<p style="color:red; text-align:center;">無効なキャラクターIDです。</p>';
+            return;
+        }
+
+        try {
+            // さっき作った万能API（detail.js）を呼び出す
+            const res = await fetch(`/api/detail?type=post&id=${charaId}`);
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                container.innerHTML = `<p style="color:red; text-align:center;">${result.error || 'キャラクターが見つかりませんでした。'}</p>`;
+                return;
+            }
+
+            const post = result.post;
+            let skillsList = post.skills ? post.skills.split(',').map(s => `<span style="background:#e2e8f0; padding:3px 8px; border-radius:4px; font-size:13px; margin-right:4px; display:inline-block; margin-bottom:4px;">${s.trim()}</span>`).join('') : '-';
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span class="badge">キャラクターシート</span>
+                    <span style="font-size: 13px; color: #666;">作者: <a href="/user/${post.author}" style="color: #3498db; text-decoration: none; font-weight: bold;">${post.author}</a> (投稿ID: ${post.id})</span>
+                </div>
+                <h2>${post.title}</h2>
+                
+                <div class="char-details">
+                    <div><b>性別:</b> ${post.gender || '-'}</div>
+                    <div><b>年齢:</b> ${post.age || '-'}</div>
+                    <div><b>職業:</b> ${post.occupation || '-'}</div>
+                    <div><b>出身:</b> ${post.origin || '-'}</div>
+                    <div><b>髪色 / 瞳色:</b> ${post.hair_color || '-'}</div>
+                    <div><b>身長 / 体重:</b> ${post.height || '-'}</div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <b style="font-size: 14px;">技・能力一覧:</b><br>
+                    <div style="margin-top: 5px;">${skillsList}</div>
+                </div>
+
+                <b style="font-size: 14px;">設定・プロフィール詳細:</b>
+                <div class="content-box">${post.content}</div>
+                <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right;">投稿日時: ${post.created_at || '不明'}</div>
+            `;
+        } catch (err) {
+            container.innerHTML = '<p style="color:red; text-align:center;">データの取得中に通信エラーが発生しました。</p>';
+        }
+    }
+
+    fetchCharaDetail();
+</script>
+
+</body>
+</html>
