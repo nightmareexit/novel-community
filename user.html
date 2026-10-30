@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユーザープロフィール - 創作・キャラクター投稿コミュニティ</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        nav { background: #2c3e50; color: white; padding: 10px; display: flex; overflow-x: auto; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; text-decoration: none; }
+        .nav-btn:hover { background: #3498db; }
+        .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .pixiv-profile-header { background: linear-gradient(135deg, #3498db, #9b59b6); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .pixiv-avatar { width: 80px; height: 80px; background: #fff; color: #333; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 10px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .user-badge { display: inline-block; background: #f39c12; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-right: 4px; margin-bottom: 4px; }
+        .post-card { background: #fafafa; border: 1px solid #e1e4e8; border-radius: 8px; padding: 15px; margin-top: 15px; cursor: pointer; transition: 0.2s; }
+        .post-card:hover { border-color: #3498db; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .post-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 8px; }
+        .badge { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        .badge-novel { background: #9b59b6; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-btn">ホーム</a>
+    <a href="/create" class="nav-btn">作成</a>
+    <a href="/profile" class="nav-btn">プロフィール</a>
+</nav>
+
+<div class="container">
+    <a href="/" class="nav-btn" style="background:#7f8c8d; display:inline-block; margin-bottom:15px; text-decoration:none;">← ホームに戻る</a>
+    
+    <div id="userContainer">
+        <p style="text-align:center; color:#777;">読み込み中...</p>
+    </div>
+</div>
+
+<script>
+    // URLのパスからユーザーIDまたはユーザー名を取得 (例: /user/iden または /user/1)
+    const pathParts = window.location.pathname.split('/');
+    const userParam = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+    async function fetchUserProfile() {
+        const container = document.getElementById('userContainer');
+        if (!userParam) {
+            container.innerHTML = '<p style="color:red; text-align:center;">ユーザーが指定されていません。</p>';
+            return;
+        }
+
+        try {
+            // パラメータが数字ならID、文字ならusernameとしてAPIを叩く
+            const isId = !isNaN(userParam);
+            const queryKey = isId ? `id=${userParam}` : `username=${userParam}`;
+            
+            const res = await fetch(`/api/detail?type=user&${queryKey}`);
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                container.innerHTML = `<p style="color:red; text-align:center;">${result.error || 'ユーザーが見つかりませんでした。'}</p>`;
+                return;
+            }
+
+            const user = result.user;
+            const posts = result.posts;
+
+            let badgesHtml = '';
+            if (user.badges) {
+                user.badges.split(',').forEach(b => {
+                    badgesHtml += `<span class="user-badge">${b.trim()}</span>`;
+                });
+            } else {
+                badgesHtml = '<span style="font-size:12px; opacity:0.8;">バッジなし</span>';
+            }
+
+            let postsHtml = '';
+            if (posts.length === 0) {
+                postsHtml = '<p style="text-align:center; color:#777; margin-top:20px;">このユーザーの投稿作品はまだありません。</p>';
+            } else {
+                posts.forEach(post => {
+                    postsHtml += `
+                        <div class="post-card" onclick="location.href='/${post.type === 'character' ? 'chara' : 'novel'}/${post.id}'">
+                            <div class="post-header">
+                                <span><span class="badge ${post.type === 'novel' ? 'badge-novel' : ''}">${post.type === 'character' ? 'キャラシ' : '小説'}</span> (ID: ${post.id})</span>
+                                <span>${post.created_at || ''}</span>
+                            </div>
+                            <h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
+                            <p style="white-space: pre-wrap; font-size:14px; background:#fff; padding:10px; border-radius:4px; border:1px solid #eee;">${post.content.substring(0, 60)}...</p>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="pixiv-profile-header">
+                    <div class="pixiv-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                    <h2 style="margin: 0; color: white; border: none;">${user.username}</h2>
+                    <p style="font-size: 13px; opacity: 0.9; margin: 5px 0;">権限: ${user.role || 'user'} (ID: ${user.id})</p>
+                    <div style="margin-top: 10px;">${badgesHtml}</div>
+                </div>
+
+                <h3>📁 ${user.username} さんの投稿作品 (${posts.length}件)</h3>
+                <div>${postsHtml}</div>
+            `;
+        } catch (err) {
+            container.innerHTML = '<p style="color:red; text-align:center;">データの取得中に通信エラーが発生しました。</p>';
+        }
+    }
+
+    fetchUserProfile();
+</script>
+
+</body>
+</html>
