@@ -129,13 +129,6 @@
         button[type="submit"]:hover, .btn-action:hover {
             background: #2980b9;
         }
-        .btn-google {
-            background: #db4437 !important;
-            margin-top: 10px;
-        }
-        .btn-google:hover {
-            background: #c23321 !important;
-        }
         .skill-row {
             display: flex;
             gap: 8px;
@@ -363,9 +356,6 @@
                     <input type="password" id="loginPassword" placeholder="パスワードを入力">
                 </div>
                 <button type="button" class="btn-action" onclick="handleLogin()">ログインする</button>
-                
-                <hr style="margin: 20px 0; border:0; border-top:1px solid #ddd;">
-                <button type="button" class="btn-action btn-google" onclick="handleGoogleLogin()">🌐 Googleアカウントでログイン</button>
             </div>
 
             <!-- 新規登録フォーム -->
@@ -380,9 +370,6 @@
                     <input type="password" id="signupPassword" placeholder="パスワードを設定">
                 </div>
                 <button type="button" class="btn-action" style="background: #2ecc71;" onclick="handleSignup()">アカウントを作成する</button>
-                
-                <hr style="margin: 20px 0; border:0; border-top:1px solid #ddd;">
-                <button type="button" class="btn-action btn-google" onclick="handleGoogleLogin()">🌐 Googleアカウントで登録・ログイン</button>
             </div>
         </div>
 
@@ -417,7 +404,7 @@
     <!-- 6. お知らせ -->
     <div id="section-news" class="section">
         <h2>📢 お知らせ</h2>
-        <div class="info-box"><p><b>[2026/10/30]</b> ログイン・新規登録・Google連携が実装されました！</p></div>
+        <div class="info-box"><p><b>[2026/10/30]</b> ログイン・新規登録機能が実装されました！</p></div>
     </div>
 
     <!-- 7. Q&A -->
@@ -509,7 +496,7 @@
             const result = await res.json();
 
             if (res.ok) {
-                alert(result.message);
+                alert(result.message || '登録成功！');
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
@@ -518,7 +505,7 @@
                 alert('エラー: ' + (result.error || '登録に失敗しました'));
             }
         } catch (err) {
-            alert('通信エラーが発生しました。');
+            alert('通信エラーが発生しました: ' + err.message);
         }
     }
 
@@ -550,36 +537,7 @@
                 alert('エラー: ' + (result.error || 'ログインに失敗しました'));
             }
         } catch (err) {
-            alert('通信エラーが発生しました。');
-        }
-    }
-
-    // Googleログイン
-    async function handleGoogleLogin() {
-        const googleName = prompt('Googleアカウント名を入力してください（シミュレーション用）:', 'Googleユーザー');
-        if (!googleName) return;
-
-        const googleId = 'google_' + Date.now();
-
-        try {
-            const res = await fetch('/api/auth?action=google-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ google_id: googleId, username: googleName })
-            });
-            const result = await res.json();
-
-            if (res.ok) {
-                alert('Googleアカウントでログインしました！');
-                currentUser = result.user;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                updateAuthorInputs();
-                updateProfileView();
-            } else {
-                alert('エラー: ' + (result.error || 'Googleログインに失敗しました'));
-            }
-        } catch (err) {
-            alert('通信エラーが発生しました。');
+            alert('通信エラーが発生しました: ' + err.message);
         }
     }
 
@@ -597,7 +555,6 @@
         document.getElementById('novel_author').value = name;
     }
 
-    // 画面表示切り替えの修正（ここが原因でした！）
     function updateProfileView() {
         const authContainer = document.getElementById('authContainer');
         const profileContainer = document.getElementById('profileContainer');
@@ -606,8 +563,8 @@
             authContainer.style.display = 'block';
             profileContainer.style.display = 'none';
         } else {
-            authContainer.style.display = 'none';    // 認証フォームを完全に隠す
-            profileContainer.style.display = 'block'; // マイページを表示する
+            authContainer.style.display = 'none';
+            profileContainer.style.display = 'block';
 
             document.getElementById('profileName').textContent = currentUser.username;
             document.getElementById('profileAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
