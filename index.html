@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テスト用ページ</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>✨ 接続テスト成功！ ✨</h1>
+    <p>画面が表示されるか確認用のページです。</p>
+    <div id="status">データベースからデータを読み込んでいます...</div>
+</div>
+
+<script>
+    // ちゃんとAPIと通信できるかテスト
+    async function testApi() {
+        try {
+            const res = await fetch('/api/posts');
+            const data = await res.json();
+            document.getElementById('status').innerHTML = `通信成功！ 投稿件数: ${data.length}件`;
+        } catch (err) {
+            document.getElementById('status').innerHTML = `通信エラー: ${err.message}`;
+        }
+    }
+    testApi();
+</script>
+
+</body>
+</html>
