@@ -3,404 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>創作・キャラクター投稿コミュニティ</title>
+    <title>テスト用ページ</title>
     <style>
         body {
             font-family: sans-serif;
             background-color: #f4f6f9;
-            margin: 0;
             padding: 20px;
             color: #333;
         }
         .container {
-            max-width: 700px;
+            max-width: 600px;
             margin: 0 auto;
             background: #fff;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h1, h2 {
-            text-align: center;
-            color: #2c3e50;
-        }
-        /* タブのスタイル */
-        .tab-container {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e1e4e8;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            background: #f1f2f6;
-            cursor: pointer;
-            font-weight: bold;
-            color: #555;
-            border: none;
-            font-size: 15px;
-            transition: 0.2s;
-        }
-        .tab-btn.active {
-            background: #3498db;
-            color: white;
-            border-radius: 6px 6px 0 0;
-        }
-        .form-section {
-            display: none;
-        }
-        .form-section.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        textarea {
-            resize: vertical;
-            height: 120px;
-        }
-        .row {
-            display: flex;
-            gap: 10px;
-        }
-        .row .form-group {
-            flex: 1;
-        }
-        button {
-            width: 100%;
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #2980b9;
-        }
-        .skill-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .skill-row input {
-            flex: 1;
-        }
-        .btn-danger {
-            background: #e74c3c;
-            width: auto;
-            padding: 0 12px;
-        }
-        .btn-secondary {
-            background: #2ecc71;
-            font-size: 14px;
-            padding: 8px;
-            margin-bottom: 15px;
-            width: auto;
-        }
-        .post-card {
-            background: #fafafa;
-            border: 1px solid #e1e4e8;
             border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        .badge {
-            background: #e74c3c;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-        }
-        .badge-novel {
-            background: #9b59b6;
-        }
-        .char-details {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
-            font-size: 13px;
-            background: #f0f3f6;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 8px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>✨ 創作コミュニティ ✨</h1>
-
-    <!-- 投稿フォーム切り替えタブ -->
-    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-        <div class="tab-container">
-            <button class="tab-btn active" onclick="switchTab('character')">👤 キャラシを作る</button>
-            <button class="tab-btn" onclick="switchTab('novel')">📖 小説を書く</button>
-        </div>
-
-        <!-- ① キャラシ投稿フォーム -->
-        <form id="charForm" class="form-section active">
-            <h2>キャラクターシート作成</h2>
-            <div class="row">
-                <div class="form-group">
-                    <label>キャラクター名</label>
-                    <input type="text" id="char_title" required placeholder="例：アルト・ローウェル">
-                </div>
-                <div class="form-group">
-                    <label>作者名</label>
-                    <input type="text" id="char_author" required placeholder="例：アイデン">
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>性別</label>
-                    <input type="text" id="gender" placeholder="例：男性">
-                </div>
-                <div class="form-group">
-                    <label>年齢</label>
-                    <input type="text" id="age" placeholder="例：16歳">
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>職業</label>
-                    <input type="text" id="occupation" placeholder="例：魔法使い">
-                </div>
-                <div class="form-group">
-                    <label>出身</label>
-                    <input type="text" id="origin" placeholder="例：王都アストラル">
-                </div>
-            </div>
-            <div class="row">
-                <div class="form-group">
-                    <label>髪色 / 瞳色</label>
-                    <input type="text" id="hair_color" placeholder="例：銀髪 / 青眼">
-                </div>
-                <div class="form-group">
-                    <label>身長 / 体重</label>
-                    <input type="text" id="height" placeholder="例：170cm / 55kg">
-                </div>
-            </div>
-
-            <!-- 技・能力 複数追加エリア -->
-            <div class="form-group">
-                <label>技・能力一覧</label>
-                <div id="skillsContainer"></div>
-                <button type="button" class="btn-secondary" onclick="addSkillField()">＋ 技・能力を追加</button>
-            </div>
-
-            <div class="form-group">
-                <label>設定・プロフィール詳細</label>
-                <textarea id="char_content" required placeholder="キャラクターのバックストーリーや性格などを書こう！"></textarea>
-            </div>
-
-            <button type="submit">キャラクターを投稿する</button>
-        </form>
-
-        <!-- ② 小説投稿フォーム -->
-        <form id="novelForm" class="form-section">
-            <h2>小説・ストーリー投稿</h2>
-            <div class="row">
-                <div class="form-group">
-                    <label>小説タイトル</label>
-                    <input type="text" id="novel_title" placeholder="例：星降る夜の物語">
-                </div>
-                <div class="form-group">
-                    <label>作者名</label>
-                    <input type="text" id="novel_author" placeholder="例：アイデン">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>小説本文</label>
-                <textarea id="novel_content" style="height: 200px;" placeholder="ここに小説の本文をたっぷり書こう！"></textarea>
-            </div>
-
-            <button type="submit" style="background: #9b59b6;">小説を投稿する</button>
-        </form>
-    </div>
-
-    <!-- 投稿一覧 -->
-    <h2>投稿一覧</h2>
-    <div id="postsList">読み込み中...</div>
+    <h1>✨ 接続テスト成功！ ✨</h1>
+    <p>画面が表示されるか確認用のページです。</p>
+    <div id="status">データベースからデータを読み込んでいます...</div>
 </div>
 
 <script>
-    // タブ切り替え関数
-    function switchTab(type) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
-
-        if (type === 'character') {
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            document.getElementById('charForm').classList.add('active');
-        } else {
-            document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            document.getElementById('novelForm').classList.add('active');
-        }
-    }
-
-    // 技入力フィールドを動的に追加する関数
-    function addSkillField(value = '') {
-        const container = document.getElementById('skillsContainer');
-        const div = document.createElement('div');
-        div.className = 'skill-row';
-        div.innerHTML = `
-            <input type="text" class="skill-input" value="${value}" placeholder="例：スターバースト（威力：大）">
-            <button type="button" class="btn-danger" onclick="this.parentElement.remove()">削除</button>
-        `;
-        container.appendChild(div);
-    }
-
-    // 最初から入力欄を1つ出しておく
-    addSkillField();
-
-    const postsList = document.getElementById('postsList');
-
-    // 投稿一覧を取得して表示
-    async function fetchPosts() {
+    // ちゃんとAPIと通信できるかテスト
+    async function testApi() {
         try {
             const res = await fetch('/api/posts');
-            const posts = await res.json();
-            
-            if (posts.length === 0) {
-                postsList.innerHTML = '<p style="text-align:center; color:#777;">まだ投稿がありません。最初の投稿をしてみよう！</p>';
-                return;
-            }
-
-            postsList.innerHTML = '';
-            posts.forEach(post => {
-                const card = document.createElement('div');
-                card.className = 'post-card';
-                
-                let detailsHtml = '';
-                if (post.type === 'character') {
-                    let skillsList = '-';
-                    if (post.skills) {
-                        const skillsArray = post.skills.split(',');
-                        skillsList = skillsArray.map(s => `<span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:4px; display:inline-block; margin-bottom:4px;">${s.trim()}</span>`).join('');
-                    }
-
-                    detailsHtml = `
-                        <div class="char-details">
-                            <div><b>性別:</b> ${post.gender || '-'}</div>
-                            <div><b>年齢:</b> ${post.age || '-'}</div>
-                            <div><b>職業:</b> ${post.occupation || '-'}</div>
-                            <div><b>出身:</b> ${post.origin || '-'}</div>
-                            <div><b>外見:</b> ${post.hair_color || '-'}</div>
-                            <div><b>体格:</b> ${post.height || '-'}</div>
-                        </div>
-                        <div style="font-size:13px; margin-bottom:5px;"><b>技・能力:</b><br>${skillsList}</div>
-                    `;
-                }
-
-                card.innerHTML = `
-                    <div class="post-header">
-                        <span><span class="badge ${post.type === 'novel' ? 'badge-novel' : ''}">${post.type === 'character' ? 'キャラシ' : '小説'}</span> 作者: ${post.author}</span>
-                        <span>${post.created_at || ''}</span>
-                    </div>
-                    <h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
-                    ${detailsHtml}
-                    <p style="white-space: pre-wrap; font-size:14px; background:#fff; padding:10px; border-radius:4px; border:1px solid #eee;">${post.content}</p>
-                `;
-                postsList.appendChild(card);
-            });
+            const data = await res.json();
+            document.getElementById('status').innerHTML = `通信成功！ 投稿件数: ${data.length}件`;
         } catch (err) {
-            postsList.innerHTML = '<p style="color:red; text-align:center;">データの取得に失敗しました。</p>';
+            document.getElementById('status').innerHTML = `通信エラー: ${err.message}`;
         }
     }
-
-    // キャラシ送信処理
-    document.getElementById('charForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const skillInputs = document.querySelectorAll('.skill-input');
-        const skillsArr = [];
-        skillInputs.forEach(input => {
-            if (input.value.trim() !== '') skillsArr.push(input.value.trim());
-        });
-
-        const data = {
-            type: 'character',
-            title: document.getElementById('char_title').value,
-            author: document.getElementById('char_author').value,
-            content: document.getElementById('char_content').value,
-            gender: document.getElementById('gender').value,
-            age: document.getElementById('age').value,
-            occupation: document.getElementById('occupation').value,
-            hair_color: document.getElementById('hair_color').value,
-            origin: document.getElementById('origin').value,
-            height: document.getElementById('height').value,
-            skills: skillsArr.join(', ')
-        };
-
-        sendPost(data, document.getElementById('charForm'));
-    });
-
-    // 小説送信処理
-    document.getElementById('novelForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = {
-            type: 'novel',
-            title: document.getElementById('novel_title').value,
-            author: document.getElementById('novel_author').value,
-            content: document.getElementById('novel_content').value
-        };
-
-        sendPost(data, document.getElementById('novelForm'));
-    });
-
-    // 共通の送信関数
-    async function sendPost(data, formElement) {
-        try {
-            const res = await fetch('/api/posts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (res.ok) {
-                alert('投稿が成功しました！');
-                formElement.reset();
-                if(data.type === 'character') {
-                    document.getElementById('skillsContainer').innerHTML = '';
-                    addSkillField();
-                }
-                fetchPosts();
-            } else {
-                alert('エラー: ' + (result.error || '投稿に失敗しました'));
-            }
-        } catch (err) {
-            alert('通信エラーが発生しました。');
-        }
-    }
-
-    // 初期読み込み
-    fetchPosts();
+    testApi();
 </script>
 
 </body>
