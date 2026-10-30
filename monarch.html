@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>創作・キャラクター投稿コミュニティ</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        button {
+            width: 100%;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .post-card {
+            background: #fafafa;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+        .char-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            font-size: 13px;
+            background: #f0f3f6;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>✨ 創作コミュニティ ✨</h1>
+
+    <!-- 投稿フォーム -->
+    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+        <h2>作品・キャラクターを投稿する</h2>
+        <form id="postForm">
+            <div class="form-group">
+                <label>投稿の種類</label>
+                <select id="type" required>
+                    <option value="character">キャラクター（キャラシ）</option>
+                    <option value="novel">小説・ストーリー</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>タイトル / キャラ名</label>
+                    <input type="text" id="title" required placeholder="例：アルト・ローウェル">
+                </div>
+                <div class="form-group">
+                    <label>作者名</label>
+                    <input type="text" id="author" required placeholder="例：アイデン">
+                </div>
+            </div>
+
+            <!-- いあきゃら風 詳細項目 -->
+            <div id="charFields">
+                <div class="row">
+                    <div class="form-group">
+                        <label>性別</label>
+                        <input type="text" id="gender" placeholder="例：男性 / 女子">
+                    </div>
+                    <div class="form-group">
+                        <label>年齢</label>
+                        <input type="text" id="age" placeholder="例：16歳">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>職業</label>
+                        <input type="text" id="occupation" placeholder="例：魔法使い / 学生">
+                    </div>
+                    <div class="form-group">
+                        <label>出身</label>
+                        <input type="text" id="origin" placeholder="例：王都アストラル">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>髪色 / 瞳色</label>
+                        <input type="text" id="hair_color" placeholder="例：銀髪 / 青眼">
+                    </div>
+                    <div class="form-group">
+                        <label>身長 / 体重</label>
+                        <input type="text" id="height" placeholder="例：170cm / 55kg">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>技・能力一覧</label>
+                    <input type="text" id="skills" placeholder="例：スターバースト、空間転移">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>本文 / 設定メモ</label>
+                <textarea id="content" required placeholder="小説の本文や、キャラクターの詳しい設定をここに書こう！"></textarea>
+            </div>
+
+            <button type="submit">投稿する</button>
+        </form>
+    </div>
+
+    <!-- 投稿一覧 -->
+    <h2>投稿一覧</h2>
+    <div id="postsList">読み込み中...</div>
+</div>
+
+<script>
+    const form = document.getElementById('postForm');
+    const postsList = document.getElementById('postsList');
+
+    // 投稿一覧を取得して表示
+    async function fetchPosts() {
+        try {
+            const res = await fetch('/api/posts');
+            const posts = await res.json();
+            
+            if (posts.length === 0) {
+                postsList.innerHTML = '<p style="text-align:center; color:#777;">まだ投稿がありません。最初の投稿をしてみよう！</p>';
+                return;
+            }
+
+            postsList.innerHTML = '';
+            posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                
+                let detailsHtml = '';
+                if (post.type === 'character') {
+                    detailsHtml = `
+                        <div class="char-details">
+                            <div><b>性別:</b> ${post.gender || '-'}</div>
+                            <div><b>年齢:</b> ${post.age || '-'}</div>
+                            <div><b>職業:</b> ${post.occupation || '-'}</div>
+                            <div><b>出身:</b> ${post.origin || '-'}</div>
+                            <div><b>外見:</b> ${post.hair_color || '-'}</div>
+                            <div><b>体格:</b> ${post.height || '-'}</div>
+                        </div>
+                        <div style="font-size:13px; margin-bottom:5px;"><b>技・能力:</b> ${post.skills || 'なし'}</div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="post-header">
+                        <span><span class="badge">${post.type === 'character' ? 'キャラシ' : '小説'}</span> 作者: ${post.author}</span>
+                        <span>${post.created_at || ''}</span>
+                    </div>
+                    <h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
+                    ${detailsHtml}
+                    <p style="white-space: pre-wrap; font-size:14px; background:#fff; padding:10px; border-radius:4px; border:1px solid #eee;">${post.content}</p>
+                `;
+                postsList.appendChild(card);
+            });
+        } catch (err) {
+            postsList.innerHTML = '<p style="color:red; text-align:center;">データの取得に失敗しました。</p>';
+        }
+    }
+
+    // 新規投稿の送信
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            type: document.getElementById('type').value,
+            title: document.getElementById('title').value,
+            author: document.getElementById('author').value,
+            content: document.getElementById('content').value,
+            gender: document.getElementById('gender').value,
+            age: document.getElementById('age').value,
+            occupation: document.getElementById('occupation').value,
+            hair_color: document.getElementById('hair_color').value,
+            origin: document.getElementById('origin').value,
+            height: document.getElementById('height').value,
+            skills: document.getElementById('skills').value
+        };
+
+        try {
+            const res = await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+                alert('投稿が成功しました！');
+                form.reset();
+                fetchPosts();
+            } else {
+                alert('エラー: ' + (result.error || '投稿に失敗しました'));
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    });
+
+    // 初期読み込み
+    fetchPosts();
+</script>
+
+</body>
+</html>
