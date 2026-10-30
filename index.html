@@ -344,6 +344,7 @@
 
     <!-- 3. プロフィール ＆ 認証画面 -->
     <div id="section-profile" class="section">
+        <!-- ログイン・新規登録エリア -->
         <div id="authContainer">
             <div class="sub-tab-container">
                 <button class="sub-tab-btn active" onclick="switchAuthTab('login')">🔑 ログイン</button>
@@ -436,7 +437,7 @@
 <script>
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     updateAuthorInputs();
-    updateProfileView(); // 起動時に状態を反映
+    updateProfileView();
 
     function switchMainTab(tabId, btnElement) {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -512,7 +513,7 @@
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
-                updateProfileView(); // 強制的にプロフィール画面を描画
+                updateProfileView();
             } else {
                 alert('エラー: ' + (result.error || '登録に失敗しました'));
             }
@@ -544,7 +545,7 @@
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
-                updateProfileView(); // 強制的にプロフィール画面を描画
+                updateProfileView();
             } else {
                 alert('エラー: ' + (result.error || 'ログインに失敗しました'));
             }
@@ -573,7 +574,7 @@
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 updateAuthorInputs();
-                updateProfileView(); // 強制的にプロフィール画面を描画
+                updateProfileView();
             } else {
                 alert('エラー: ' + (result.error || 'Googleログインに失敗しました'));
             }
@@ -596,6 +597,7 @@
         document.getElementById('novel_author').value = name;
     }
 
+    // 画面表示切り替えの修正（ここが原因でした！）
     function updateProfileView() {
         const authContainer = document.getElementById('authContainer');
         const profileContainer = document.getElementById('profileContainer');
@@ -604,9 +606,8 @@
             authContainer.style.display = 'block';
             profileContainer.style.display = 'none';
         } else {
-            authContainer.style.display = 'block'; // プロフィールタブ内を表示
-            authContainer.style.display = 'none';  // ログイン・登録フォームを非表示
-            profileContainer.style.display = 'block'; // マイページを表示
+            authContainer.style.display = 'none';    // 認証フォームを完全に隠す
+            profileContainer.style.display = 'block'; // マイページを表示する
 
             document.getElementById('profileName').textContent = currentUser.username;
             document.getElementById('profileAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
@@ -731,7 +732,7 @@
 
     document.getElementById('novelForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser) { alert('投稿するにはログインした状態にしてください！'); return; }
+        if (!currentUser) { alert('投稿するにはログインしてください！'); return; }
         const data = {
             type: 'novel',
             title: document.getElementById('novel_title').value,
