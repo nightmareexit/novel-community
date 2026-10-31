@@ -45,7 +45,7 @@
         }
 
         try {
-            const res = await fetch(`/api/detail?type=post&id=${novelId}`);
+            const res = await fetch(`/api/detail?type=post&target_type=novel&id=${novelId}`);
             const result = await res.json();
 
             if (!res.ok || !result.success) {
