@@ -7,12 +7,12 @@
     <style>
         body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
         
-        /* 全体レイアウト（左サイドバー ＋ メインコンテンツ） */
-        .app-layout { display: flex; min-height: 100vh; }
+        /* 全体レイアウト */
+        .app-layout { display: flex; min-height: 100vh; position: relative; }
         
-        /* pixiv風サイドバー（スマホでもPCでも左側固定） */
-        sidebar { width: 220px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; flex-shrink: 0; }
-        .logo-area { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; padding-left: 5px; }
+        /* pixiv風サイドバー（PCでは常時表示） */
+        sidebar { width: 220px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; flex-shrink: 0; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; padding-left: 5px; display: flex; justify-content: space-between; align-items: center; }
         
         .side-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .side-btn:hover { background: #f0f3f6; color: #3498db; }
@@ -21,6 +21,10 @@
         /* 青色の四角い目立つ作成ボタン */
         .btn-create-main { background: #3498db; color: white !important; border-radius: 8px; text-align: center; justify-content: center; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
         .btn-create-main:hover { background: #2980b9 !important; }
+
+        /* スマホ用ハンバーガーボタン */
+        .menu-toggle { display: none; background: #2c3e50; color: white; border: none; padding: 10px 15px; font-size: 16px; border-radius: 6px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 1100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
 
         /* メインコンテンツ領域 */
         .main-content { flex: 1; padding: 25px; max-width: 750px; margin: 0 auto; box-sizing: border-box; }
@@ -33,21 +37,29 @@
         .badge-novel { background: #9b59b6; }
         .char-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; font-size: 13px; background: #f0f3f6; padding: 10px; border-radius: 6px; margin: 8px 0; }
 
-        /* スマホ向けの微調整（サイドバーの幅を少しコンパクトにする） */
-        @media (max-width: 600px) {
-            sidebar { width: 170px; padding: 15px 8px; }
-            .side-btn { padding: 10px; font-size: 13px; }
-            .logo-area { font-size: 13px; }
-            .main-content { padding: 15px 10px; }
+        /* スマホ向けのレスポンシブ設定（初期状態ではサイドバーを左に隠す） */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            sidebar { position: fixed; left: -240px; top: 0; height: 100vh; width: 220px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+            sidebar.open { left: 0; }
+            .sidebar-overlay.open { display: block; }
+            .main-content { padding: 70px 15px 20px 15px; /* 上部ボタンのスペースを確保 */ }
         }
     </style>
 </head>
 <body>
 
+<!-- スマホ用メニュー開閉ボタン -->
+<button class="menu-toggle" onclick="toggleSidebar()">☰ メニュー</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <div class="app-layout">
     <!-- pixiv風サイドバー -->
-    <sidebar>
-        <div class="logo-area">🎨 創作コミュニティ</div>
+    <sidebar id="appSidebar">
+        <div class="logo-area">
+            <span>🎨 創作コミュニティ</span>
+            <span style="cursor:pointer; font-size:18px; display:none;" id="closeBtn" onclick="toggleSidebar()">×</span>
+        </div>
         <a href="/create" class="side-btn btn-create-main">＋ 作成する</a>
         <a href="/" class="side-btn active">🏠 ホーム</a>
         <a href="/profile" class="side-btn">👤 プロフィール</a>
@@ -62,6 +74,14 @@
 </div>
 
 <script>
+    // サイドバーの開閉を切り替える関数
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+
     async function fetchPosts() {
         const postsList = document.getElementById('postsList');
         postsList.innerHTML = '<p style="text-align:center; color:#777;">読み込み中...</p>';
