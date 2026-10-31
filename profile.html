@@ -294,7 +294,7 @@
         };
 
         try {
-            const res = await fetch('/api/profile/update', {
+            const res = await fetch('/api/auth?action=update', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -335,7 +335,7 @@
                         <span><span class="badge ${post.type === 'novel' ? 'badge-novel' : ''}">${post.type === 'character' ? 'キャラシ' : '小説'}</span> (ID: ${post.id})</span>
                         <span>${post.created_at || ''}</span>
                     </div>
-                    <h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
+                    _h3 style="margin: 5px 0 10px 0;">${post.title}</h3>
                     <p style="white-space: pre-wrap; font-size:14px; background:#fff; padding:10px; border-radius:4px; border:1px solid #eee;">${post.content.substring(0, 50)}...</p>
                 `;
                 myPostsList.appendChild(card);
