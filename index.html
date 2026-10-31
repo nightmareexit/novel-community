@@ -10,20 +10,20 @@
         /* 全体レイアウト（左サイドバー ＋ メインコンテンツ） */
         .app-layout { display: flex; min-height: 100vh; }
         
-        /* pixiv風サイドバー */
-        sidebar { width: 240px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 15px; display: flex; flex-direction: column; gap: 10px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; }
-        .logo-area { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; padding-left: 5px; }
+        /* pixiv風サイドバー（スマホでもPCでも左側固定） */
+        sidebar { width: 220px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; flex-shrink: 0; }
+        .logo-area { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; padding-left: 5px; }
         
-        .side-btn { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .side-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
         .side-btn:hover { background: #f0f3f6; color: #3498db; }
         .side-btn.active { background: #eef2f7; color: #3498db; }
         
         /* 青色の四角い目立つ作成ボタン */
-        .btn-create-main { background: #3498db; color: white !important; border-radius: 8px; text-align: center; justify-content: center; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+        .btn-create-main { background: #3498db; color: white !important; border-radius: 8px; text-align: center; justify-content: center; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
         .btn-create-main:hover { background: #2980b9 !important; }
 
         /* メインコンテンツ領域 */
-        .main-content { flex: 1; padding: 30px; max-width: 750px; margin: 0 auto; box-sizing: border-box; }
+        .main-content { flex: 1; padding: 25px; max-width: 750px; margin: 0 auto; box-sizing: border-box; }
         
         h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 8px; margin-top: 0; }
         .post-card { background: #fafafa; border: 1px solid #e1e4e8; border-radius: 8px; padding: 15px; margin-top: 15px; cursor: pointer; transition: 0.2s; }
@@ -33,14 +33,12 @@
         .badge-novel { background: #9b59b6; }
         .char-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; font-size: 13px; background: #f0f3f6; padding: 10px; border-radius: 6px; margin: 8px 0; }
 
-        /* レスポンシブ対応（スマホの場合はサイドバーを上部ナビにするなど） */
-        @media (max-width: 768px) {
-            .app-layout { flex-direction: column; }
-            sidebar { width: 100%; height: auto; position: static; flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 10px; border-right: none; border-bottom: 1px solid #e1e4e8; }
-            .logo-area { display: none; }
-            .side-btn { padding: 8px 12px; font-size: 12px; }
-            .btn-create-main { margin-bottom: 0; }
-            .main-content { padding: 15px; }
+        /* スマホ向けの微調整（サイドバーの幅を少しコンパクトにする） */
+        @media (max-width: 600px) {
+            sidebar { width: 170px; padding: 15px 8px; }
+            .side-btn { padding: 10px; font-size: 13px; }
+            .logo-area { font-size: 13px; }
+            .main-content { padding: 15px 10px; }
         }
     </style>
 </head>
