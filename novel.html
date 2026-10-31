@@ -32,17 +32,27 @@
 </div>
 
 <script>
-    // URLのパスから確実にIDを取得する
-    const pathSegments = window.location.pathname
-        .split('/')
-        .filter(Boolean);
-    
-    const novelId = pathSegments[pathSegments.length - 1];
+    // 1. URLのパス（/novel/5 など）またはクエリ（?id=5 など）から柔軟にIDを抽出する
+    const urlParams = new URLSearchParams(window.location.search);
+    let novelId = urlParams.get('id');
 
-    // もし「/novel」だけでIDがない場合のガード
-    if (!novelId || isNaN(novelId)) {
-        document.getElementById('novelDetailContainer').innerHTML = `
-            <p style="text-align:center; color:#e74c3c;">小説のIDが指定されていません。</p>
+    if (!novelId) {
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        // パスが ['novel', '5'] なら 5 を取得
+        const novelIndex = pathSegments.indexOf('novel');
+        if (novelIndex !== -1 && pathSegments.length > novelIndex + 1) {
+            novelId = pathSegments[novelIndex + 1];
+        } else if (pathSegments.length > 0) {
+            novelId = pathSegments[pathSegments.length - 1];
+        }
+    }
+
+    // 2. IDが取得できなかった場合や無効な場合のガード処理
+    const container = document.getElementById('novelDetailContainer');
+    if (!novelId || novelId === 'novel' || isNaN(novelId)) {
+        container.innerHTML = `
+            <p style="text-align:center; color:#e74c3c;">小説のIDが正しく指定されていません。</p>
+            <p style="text-align:center; font-size:12px; color:#888;">現在のURL: ${window.location.pathname}</p>
             <div style="text-align:center; margin-top:20px;">
                 <a href="/" class="nav-btn" style="background:#3498db; text-decoration:none; padding:10px 20px; border-radius:6px; display:inline-block; color:white;">ホームに戻る</a>
             </div>
@@ -50,9 +60,8 @@
         throw new Error("ID未指定のため停止");
     }
 
+    // 3. APIからデータを取得して画面に表示する
     async function fetchNovelDetail() {
-        const container = document.getElementById('novelDetailContainer');
-
         try {
             const res = await fetch(`/api/detail?type=post&target_type=novel&id=${novelId}`);
             const result = await res.json();
