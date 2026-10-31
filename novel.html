@@ -32,17 +32,26 @@
 </div>
 
 <script>
-    // URLのパスから小説IDを取得する
-    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    // URLのパスから確実にIDを取得する
+    const pathSegments = window.location.pathname
+        .split('/')
+        .filter(Boolean);
+    
     const novelId = pathSegments[pathSegments.length - 1];
 
+    // もし「/novel」だけでIDがない場合のガード
+    if (!novelId || isNaN(novelId)) {
+        document.getElementById('novelDetailContainer').innerHTML = `
+            <p style="text-align:center; color:#e74c3c;">小説のIDが指定されていません。</p>
+            <div style="text-align:center; margin-top:20px;">
+                <a href="/" class="nav-btn" style="background:#3498db; text-decoration:none; padding:10px 20px; border-radius:6px; display:inline-block; color:white;">ホームに戻る</a>
+            </div>
+        `;
+        throw new Error("ID未指定のため停止");
+    }
 
     async function fetchNovelDetail() {
         const container = document.getElementById('novelDetailContainer');
-        if (!novelId || isNaN(novelId)) {
-            container.innerHTML = '<p style="color:red; text-align:center;">無効な小説IDです。</p>';
-            return;
-        }
 
         try {
             const res = await fetch(`/api/detail?type=post&target_type=novel&id=${novelId}`);
@@ -58,7 +67,7 @@
             container.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <span class="badge-novel">小説・シナリオ</span>
-                    <span style="font-size: 13px; color: #666;">作者: <a href="/user/${post.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${post.author}</a> (投稿ID: ${post.id})</span>
+                    <span style="font-size: 13px; color: #666;">作者: <a href="/user/${post.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${post.author}</a> (ID: ${post.id})</span>
                 </div>
                 <h2>${post.title}</h2>
                 <div class="novel-content">${post.content}</div>
