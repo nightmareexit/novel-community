@@ -6,200 +6,162 @@
     <title>作品作成 - 創作・キャラクター投稿コミュニティ</title>
     <style>
         body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
-        nav { background: #2c3e50; color: white; padding: 10px; display: flex; overflow-x: auto; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .nav-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; text-decoration: none; }
-        .nav-btn.active, .nav-btn:hover { background: #3498db; }
-        .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* 全体レイアウト */
+        .app-layout { display: flex; min-height: 100vh; position: relative; }
+        
+        /* pixiv風サイドバー */
+        sidebar { width: 220px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; flex-shrink: 0; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; padding-left: 5px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .side-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .side-btn:hover { background: #f0f3f6; color: #3498db; }
+        .side-btn.active { background: #eef2f7; color: #3498db; }
+        
+        .btn-create-main { background: #3498db; color: white !important; border-radius: 8px; text-align: center; justify-content: center; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+        .btn-create-main:hover { background: #2980b9 !important; }
+
+        /* スマホ用ハンバーガーボタン */
+        .menu-toggle { display: none; background: #2c3e50; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 6px; cursor: pointer; position: fixed; top: 12px; left: 12px; z-index: 1100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
+
+        /* メインコンテンツ領域 */
+        .main-content { flex: 1; padding: 25px; max-width: 650px; margin: 0 auto; box-sizing: border-box; }
+        
         h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 8px; margin-top: 0; }
-        .sub-tab-container { display: flex; margin-bottom: 20px; border-bottom: 2px solid #e1e4e8; }
-        .sub-tab-btn { flex: 1; padding: 10px; text-align: center; background: #f1f2f6; cursor: pointer; font-weight: bold; color: #555; border: none; font-size: 14px; }
-        .sub-tab-btn.active { background: #3498db; color: white; border-radius: 6px 6px 0 0; }
-        .form-section { display: none; }
-        .form-section.active { display: block; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        textarea { resize: vertical; height: 100px; }
-        .row { display: flex; gap: 10px; }
-        .row .form-group { flex: 1; }
-        button[type="submit"] { width: 100%; background: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button[type="submit"]:hover { background: #2980b9; }
-        .skill-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .skill-row input { flex: 1; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; }
-        .btn-secondary { background: #2ecc71; color: white; border: none; font-size: 13px; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        textarea { resize: vertical; }
+        .btn-submit { background: #2ecc71; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background: #27ae60; }
+        .hidden { display: none; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            sidebar { position: fixed; left: -240px; top: 0; height: 100vh; width: 220px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); padding-top: 60px; }
+            sidebar.open { left: 0; }
+            .sidebar-overlay.open { display: block; }
+            .main-content { padding: 60px 15px 20px 15px; }
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <a href="/" class="nav-btn">ホーム</a>
-    <a href="/create" class="nav-btn active">作成</a>
-    <a href="/profile" class="nav-btn">プロフィール</a>
-</nav>
+<button class="menu-toggle" onclick="toggleSidebar()">☰ メニュー</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<div class="container">
-    <h2>✍️ 作品・キャラクターを作成</h2>
-    <div class="sub-tab-container">
-        <button class="sub-tab-btn active" onclick="switchSubTab('character')">👤 キャラシを作る</button>
-        <button class="sub-tab-btn" onclick="switchSubTab('novel')">📖 小説を書く</button>
+<div class="app-layout">
+    <sidebar id="appSidebar">
+        <div class="logo-area">
+            <span>🎨 創作コミュニティ</span>
+            <span style="cursor:pointer; font-size:18px; padding: 0 5px;" onclick="toggleSidebar()">✕</span>
+        </div>
+        <a href="/create" class="side-btn btn-create-main active">＋ 作成する</a>
+        <a href="/" class="side-btn">🏠 ホーム</a>
+        <a href="/profile" class="side-btn">👤 プロフィール</a>
+        <a href="/bookmarks.html" class="side-btn">🔖 ブックマーク</a>
+    </sidebar>
+
+    <div class="main-content">
+        <h2>✍️ 新規作成</h2>
+        
+        <div class="form-group">
+            <label>投稿タイプ</label>
+            <select id="typeSelect" onchange="switchType()">
+                <option value="novel">小説・シナリオ</option>
+                <option value="character">キャラクターシート</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>タイトル</label>
+            <input type="text" id="titleInput" placeholder="作品のタイトルを入力">
+        </div>
+
+        <!-- キャラクター専用項目 -->
+        <div id="characterFields" class="hidden">
+            <div class="form-group"><label>性別</label><input type="text" id="genderInput" placeholder="例: 男性、女性、不明"></div>
+            <div class="form-group"><label>年齢</label><input type="text" id="ageInput" placeholder="例: 14歳、不老不死"></div>
+            <div class="form-group"><label>職業・立場</label><input type="text" id="occupationInput" placeholder="例: 学生、魔法使い"></div>
+            <div class="form-group"><label>出身地・世界</label><input type="text" id="originInput" placeholder="例: 沖縄、帝都"></div>
+            <div class="form-group"><label>スキル・能力（カンマ区切り）</label><input type="text" id="skillsInput" placeholder="例: 炎魔法, 剣術, 高速移動"></div>
+        </div>
+
+        <div class="form-group">
+            <label id="contentLabel">本文</label>
+            <textarea id="contentInput" rows="10" placeholder="作品の内容や詳細設定をここに入力してください..."></textarea>
+        </div>
+
+        <button class="btn-submit" onclick="createPost()">投稿する</button>
     </div>
-
-    <form id="charForm" class="form-section active">
-        <div class="row">
-            <div class="form-group">
-                <label>キャラクター名</label>
-                <input type="text" id="char_title" required placeholder="例：アルト・ローウェル">
-            </div>
-            <div class="form-group">
-                <label>作者名（自動入力）</label>
-                <input type="text" id="char_author" readonly placeholder="ログインしてください">
-            </div>
-        </div>
-        <div class="row">
-            <div class="form-group">
-                <label>性別</label>
-                <input type="text" id="gender" placeholder="例：男性">
-            </div>
-            <div class="form-group">
-                <label>年齢</label>
-                <input type="text" id="age" placeholder="例：16歳">
-            </div>
-        </div>
-        <div class="row">
-            <div class="form-group">
-                <label>職業</label>
-                <input type="text" id="occupation" placeholder="例：魔法使い">
-            </div>
-            <div class="form-group">
-                <label>出身</label>
-                <input type="text" id="origin" placeholder="例：王都アストラル">
-            </div>
-        </div>
-        <div class="row">
-            <div class="form-group">
-                <label>髪色 / 瞳色</label>
-                <input type="text" id="hair_color" placeholder="例：銀髪 / 青眼">
-            </div>
-            <div class="form-group">
-                <label>身長 / 体重</label>
-                <input type="text" id="height" placeholder="例：170cm / 55kg">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>技・能力一覧</label>
-            <div id="skillsContainer"></div>
-            <button type="button" class="btn-secondary" onclick="addSkillField()">＋ 技・能力を追加</button>
-        </div>
-
-        <div class="form-group">
-            <label>設定・プロフィール詳細</label>
-            <textarea id="char_content" required placeholder="バックストーリーや性格などを書こう！"></textarea>
-        </div>
-
-        <button type="submit">キャラクターを投稿する</button>
-    </form>
-
-    <form id="novelForm" class="form-section">
-        <div class="row">
-            <div class="form-group">
-                <label>小説タイトル</label>
-                <input type="text" id="novel_title" required placeholder="例：星降る夜の物語">
-            </div>
-            <div class="form-group">
-                <label>作者名（自動入力）</label>
-                <input type="text" id="novel_author" readonly placeholder="ログインしてください">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>小説本文</label>
-            <textarea id="novel_content" required style="height: 180px;" placeholder="ここに小説の本文をたっぷり書こう！"></textarea>
-        </div>
-        <button type="submit" style="background: #9b59b6;">小説を投稿する</button>
-    </form>
 </div>
 
 <script>
-    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-    if (currentUser) {
-        document.getElementById('char_author').value = currentUser.username;
-        document.getElementById('novel_author').value = currentUser.username;
-    } else {
-        alert('投稿するにはログインしてください！');
-        location.href = '/profile';
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
     }
 
-    function switchSubTab(type) {
-        document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
-
+    function switchType() {
+        const type = document.getElementById('typeSelect').value;
+        const charFields = document.getElementById('characterFields');
+        const contentLabel = document.getElementById('contentLabel');
+        
         if (type === 'character') {
-            document.querySelectorAll('.sub-tab-btn')[0].classList.add('active');
-            document.getElementById('charForm').classList.add('active');
+            charFields.classList.remove('hidden');
+            contentLabel.innerText = 'プロフィール詳細・設定';
         } else {
-            document.querySelectorAll('.sub-tab-btn')[1].classList.add('active');
-            document.getElementById('novelForm').classList.add('active');
+            charFields.classList.add('hidden');
+            contentLabel.innerText = '本文';
         }
     }
 
-    function addSkillField(value = '') {
-        const container = document.getElementById('skillsContainer');
-        const div = document.createElement('div');
-        div.className = 'skill-row';
-        div.innerHTML = `
-            <input type="text" class="skill-input" value="${value}" placeholder="例：スターバースト（威力：大）">
-            <button type="button" class="btn-danger" onclick="this.parentElement.remove()">削除</button>
-        `;
-        container.appendChild(div);
-    }
-    addSkillField();
+    async function createPost() {
+        const savedUser = localStorage.getItem('currentUser');
+        if (!savedUser) {
+            alert('プロフィール（ユーザー名）を設定してから投稿してください！');
+            location.href = '/profile';
+            return;
+        }
+        const currentUser = JSON.parse(savedUser);
 
-    document.getElementById('charForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const skillInputs = document.querySelectorAll('.skill-input');
-        const skillsArr = [];
-        skillInputs.forEach(input => { if (input.value.trim() !== '') skillsArr.push(input.value.trim()); });
+        const type = document.getElementById('typeSelect').value;
+        const title = document.getElementById('titleInput').value.trim();
+        const content = document.getElementById('contentInput').value.trim();
 
-        const data = {
-            type: 'character',
-            title: document.getElementById('char_title').value,
+        if (!title || !content) {
+            alert('タイトルと内容は必須です！');
+            return;
+        }
+
+        const payload = {
             author: currentUser.username,
-            content: document.getElementById('char_content').value,
-            gender: document.getElementById('gender').value,
-            age: document.getElementById('age').value,
-            occupation: document.getElementById('occupation').value,
-            hair_color: document.getElementById('hair_color').value,
-            origin: document.getElementById('origin').value,
-            height: document.getElementById('height').value,
-            skills: skillsArr.join(', ')
+            type: type,
+            title: title,
+            content: content,
+            gender: document.getElementById('genderInput')?.value || '',
+            age: document.getElementById('ageInput')?.value || '',
+            occupation: document.getElementById('occupationInput')?.value || '',
+            origin: document.getElementById('originInput')?.value || '',
+            skills: document.getElementById('skillsInput')?.value || ''
         };
-        sendPost(data, document.getElementById('charForm'));
-    });
 
-    document.getElementById('novelForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = {
-            type: 'novel',
-            title: document.getElementById('novel_title').value,
-            author: currentUser.username,
-            content: document.getElementById('novel_content').value
-        };
-        sendPost(data, document.getElementById('novelForm'));
-    });
-
-    async function sendPost(data, formElement) {
         try {
-            const res = await fetch('/api/posts', {
+            const res = await fetch('/api/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
-            if (res.ok) {
-                alert('投稿が成功しました！');
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                alert('投稿が完了しました！');
                 location.href = '/';
             } else {
-                alert('投稿に失敗しました');
+                alert('エラー: ' + (result.error || '投稿に失敗しました'));
             }
         } catch (err) {
             alert('通信エラーが発生しました。');
