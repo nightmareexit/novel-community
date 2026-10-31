@@ -33,8 +33,9 @@
 
 <script>
     // URLのパスから小説IDを取得する
-    const pathParts = window.location.pathname.split('/');
-    const novelId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const novelId = pathSegments[pathSegments.length - 1];
+
 
     async function fetchNovelDetail() {
         const container = document.getElementById('novelDetailContainer');
