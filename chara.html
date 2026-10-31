@@ -50,7 +50,7 @@ const charaId = pathSegments[pathSegments.length - 1];
 
         try {
             // さっき作った万能API（detail.js）を呼び出す
-            const res = await fetch(`/api/detail?type=post&id=${charaId}`);
+            const res = await fetch(`/api/detail?type=post&target_type=character&id=${charaId}`);
             const result = await res.json();
 
             if (!res.ok || !result.success) {
