@@ -50,8 +50,9 @@
                 const card = document.createElement('div');
                 card.className = 'post-card';
                 
-                // カードをクリックしたらそれぞれの個別ページへ飛ぶように振り分け
+                // カードをクリックしたときの動作（IDがちゃんと取れているかアラートで確認）
                 card.onclick = () => {
+                    alert("デバッグ - 取得ID: " + post.id + " / タイプ: " + post.type);
                     if (post.type === 'character') {
                         location.href = `/chara/${post.id}`;
                     } else {
