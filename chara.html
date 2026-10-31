@@ -35,9 +35,11 @@
 </div>
 
 <script>
-    // URLのパス（例: /chara/1 なら "1" を取得する）
-    const pathParts = window.location.pathname.split('/');
-    const charaId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+// URLのパスから確実に数字（ID）を抜き出す
+const pathSegments = window.location.pathname.split('/').filter(Boolean);
+// パスの中から最後の要素をIDとして取得する
+const charaId = pathSegments[pathSegments.length - 1];
+
 
     async function fetchCharaDetail() {
         const container = document.getElementById('detailContainer');
