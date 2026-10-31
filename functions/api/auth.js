@@ -7,15 +7,10 @@ export async function onRequest(context) {
     "Access-Control-Allow-Origin": "*"
   };
 
-  if (request.method !== "POST") {
-    return Response.json({ error: "Method not allowed" }, { status: 405, headers });
-  }
-
   try {
-    const data = await request.json().catch(() => ({}));
-
     // ① 新規登録 (signup)
-    if (action === "signup") {
+    if (action === "signup" && request.method === "POST") {
+      const data = await request.json().catch(() => ({}));
       const username = data.username ? data.username.trim() : "";
       const password = data.password ? data.password.trim() : "";
 
@@ -23,7 +18,6 @@ export async function onRequest(context) {
         return Response.json({ error: "ユーザー名とパスワードを入力してください" }, { status: 400, headers });
       }
 
-      // 既存チェック
       const existing = await env.DB.prepare(
         "SELECT * FROM users WHERE username = ?"
       ).bind(username).first();
@@ -47,7 +41,8 @@ export async function onRequest(context) {
     }
 
     // ② ログイン (login)
-    if (action === "login") {
+    if (action === "login" && request.method === "POST") {
+      const data = await request.json().catch(() => ({}));
       const loginId = data.loginId ? data.loginId.trim() : "";
       const password = data.password ? data.password.trim() : "";
 
@@ -70,7 +65,27 @@ export async function onRequest(context) {
       return Response.json({ success: true, user }, { headers });
     }
 
-    return Response.json({ error: "Invalid action" }, { status: 400, headers });
+    // ③ プロフィール更新 (update)
+    if (action === "update" && (request.method === "PUT" || request.method === "POST")) {
+      const data = await request.json().catch(() => ({}));
+      const { id, bio, avatar, selected_badges } = data;
+
+      if (!id) {
+        return Response.json({ success: false, error: 'ユーザーIDが必要です' }, { status: 400, headers });
+      }
+
+      await env.DB.prepare(
+        `UPDATE users SET bio = ?, avatar = ?, selected_badges = ? WHERE id = ?`
+      ).bind(bio || '', avatar || '', selected_badges || '', id).run();
+
+      const updatedUser = await env.DB.prepare(
+        `SELECT id, username, role, badges, bio, avatar, selected_badges FROM users WHERE id = ?`
+      ).bind(id).first();
+
+      return Response.json({ success: true, user: updatedUser }, { headers });
+    }
+
+    return Response.json({ error: "Invalid action or method" }, { status: 400, headers });
 
   } catch (err) {
     return Response.json({ error: "サーバーエラー: " + err.message }, { status: 500, headers });
