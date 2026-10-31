@@ -11,9 +11,17 @@
         .nav-btn:hover { background: #3498db; }
         .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 10px; margin-top: 0; }
-        .badge { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
-        .char-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 14px; background: #f0f3f6; padding: 15px; border-radius: 8px; margin: 15px 0; }
-        .char-content { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e1e4e8; line-height: 1.8; white-space: pre-wrap; font-size: 15px; margin-top: 15px; }
+        .badge-chara { background: #3498db; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .chara-meta { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e1e4e8; margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
+        .chara-content { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e1e4e8; line-height: 1.8; white-space: pre-wrap; font-size: 15px; margin-top: 15px; }
+        .manage-panel { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .btn-edit { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-private { background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        /* モーダル用スタイル */
+        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+        .modal-content input, .modal-content textarea, .modal-content select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -27,29 +35,67 @@
 <div class="container">
     <a href="/" class="nav-btn" style="background:#7f8c8d; display:inline-block; margin-bottom:15px; text-decoration:none;">← ホームに戻る</a>
     
-    <div id="charDetailContainer">
+    <div id="charaDetailContainer">
         <p style="text-align:center; color:#777;">読み込み中...</p>
+    </div>
+</div>
+
+<!-- 編集モーダル -->
+<div id="editModal">
+    <div class="modal-content">
+        <h3>✏️ キャラクターの編集</h3>
+        <label>名前（タイトル）</label>
+        <input type="text" id="editTitle">
+        
+        <label>ステータス（公開設定）</label>
+        <select id="editStatus">
+            <option value="public">公開</option>
+            <option value="private">非公開</option>
+        </select>
+
+        <label>性別</label>
+        <input type="text" id="editGender">
+
+        <label>年齢</label>
+        <input type="text" id="editAge">
+
+        <label>職業・立場</label>
+        <input type="text" id="editOccupation">
+
+        <label>出身地・世界</label>
+        <input type="text" id="editOrigin">
+
+        <label>スキル・能力</label>
+        <input type="text" id="editSkills">
+
+        <label>プロフィール詳細・設定</label>
+        <textarea id="editContent" rows="6"></textarea>
+        
+        <div style="text-align: right; gap: 8px; display: flex; justify-content: flex-end;">
+            <button onclick="closeEditModal()" class="nav-btn" style="background:#7f8c8d; cursor:pointer;">キャンセル</button>
+            <button onclick="saveEdit()" class="btn-edit" style="padding: 8px 16px;">保存する</button>
+        </div>
     </div>
 </div>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    let charId = urlParams.get('id');
+    let charaId = urlParams.get('id');
 
-    if (!charId) {
+    if (!charaId) {
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
-        const charIndex = pathSegments.indexOf('chara');
-        if (charIndex !== -1 && pathSegments.length > charIndex + 1) {
-            charId = pathSegments[charIndex + 1];
+        const charaIndex = pathSegments.indexOf('chara');
+        if (charaIndex !== -1 && pathSegments.length > charaIndex + 1) {
+            charaId = pathSegments[charaIndex + 1];
         } else if (pathSegments.length > 0) {
-            charId = pathSegments[pathSegments.length - 1];
+            charaId = pathSegments[pathSegments.length - 1];
         }
     }
 
-    const container = document.getElementById('charDetailContainer');
-    if (!charId || charId === 'chara' || isNaN(charId)) {
+    const container = document.getElementById('charaDetailContainer');
+    if (!charaId || charaId === 'chara' || isNaN(charaId)) {
         container.innerHTML = `
-            <p style="text-align:center; color:#e74c3c;">無効なキャラクターIDです。</p>
+            <p style="text-align:center; color:#e74c3c;">キャラクターのIDが正しく指定されていません。</p>
             <div style="text-align:center; margin-top:20px;">
                 <a href="/" class="nav-btn" style="background:#3498db; text-decoration:none; padding:10px 20px; border-radius:6px; display:inline-block; color:white;">ホームに戻る</a>
             </div>
@@ -57,9 +103,11 @@
         throw new Error("ID未指定のため停止");
     }
 
-    async function fetchCharDetail() {
+    let currentPost = null;
+
+    async function fetchCharaDetail() {
         try {
-            const res = await fetch(`/api/detail?type=post&id=${charId}`);
+            const res = await fetch(`/api/detail?type=post&target_type=chara&id=${charaId}`);
             const result = await res.json();
 
             if (!res.ok || !result.success) {
@@ -67,31 +115,163 @@
                 return;
             }
 
-            const post = result.post;
-            let skillsList = post.skills ? post.skills.split(',').map(s => `<span style="background:#e2e8f0; padding:3px 8px; border-radius:4px; font-size:13px; margin-right:5px; display:inline-block; margin-bottom:5px;">${s.trim()}</span>`).join('') : '-';
-
-            container.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span class="badge">キャラクターシート</span>
-                    <span style="font-size: 13px; color: #666;">作者: <a href="/user.html?username=${post.author}" style="color: #3498db; text-decoration: none; font-weight: bold;">${post.author}</a> (ID: ${post.id})</span>
-                </div>
-                <h2>${post.title}</h2>
-                <div class="char-details">
-                    <div><b>性別:</b> ${post.gender || '-'}</div>
-                    <div><b>年齢:</b> ${post.age || '-'}</div>
-                    <div><b>職業:</b> ${post.occupation || '-'}</div>
-                    <div><b>出身:</b> ${post.origin || '-'}</div>
-                </div>
-                <div style="font-size: 14px; margin-bottom: 15px;"><b>技・能力:</b><br>${skillsList}</div>
-                <div class="char-content"><b>詳細設定・プロフィール:</b><br><br>${post.content}</div>
-                <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right;">投稿日時: ${post.created_at || '不明'}</div>
-            `;
+            currentPost = result.post;
+            renderPage();
         } catch (err) {
             container.innerHTML = '<p style="color:red; text-align:center;">データの取得中に通信エラーが発生しました。</p>';
         }
     }
 
-    fetchCharDetail();
+    function renderPage() {
+        const savedUser = localStorage.getItem('currentUser');
+        const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+        // 本人のみ true になる厳格なガード
+        const isOwner = currentUser && currentUser.username === currentPost.author;
+
+        const statusBadge = currentPost.status === 'private' ? '<span style="background:#e74c3c; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">非公開</span>' : '';
+
+        const managePanelHtml = isOwner ? `
+            <div class="manage-panel">
+                <span style="font-size:12px; font-weight:bold; color:#555;">🛠️ 管理メニュー:</span>
+                <button class="btn-edit" onclick="openEditModal()">✏️ 編集</button>
+                <button class="btn-private" onclick="toggleStatus()">${currentPost.status === 'private' ? '🔓 公開にする' : '🔒 非公開にする'}</button>
+                <button class="btn-delete" onclick="deletePost()">🗑️ 削除</button>
+            </div>
+        ` : '';
+
+        container.innerHTML = `
+            ${managePanelHtml}
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div><span class="badge-chara">キャラクターシート</span>${statusBadge}</div>
+                <span style="font-size: 13px; color: #666;">作者: <a href="/user.html?username=${currentPost.author}" style="color: #3498db; text-decoration: none; font-weight: bold;">${currentPost.author}</a> (ID: ${currentPost.id})</span>
+            </div>
+            <h2>${currentPost.title}</h2>
+            
+            <div class="chara-meta">
+                <div><strong>性別:</strong> ${currentPost.gender || '未設定'}</div>
+                <div><strong>年齢:</strong> ${currentPost.age || '未設定'}</div>
+                <div><strong>職業:</strong> ${currentPost.occupation || '未設定'}</div>
+                <div><strong>出身:</strong> ${currentPost.origin || '未設定'}</div>
+                <div style="grid-column: span 2;"><strong>スキル・能力:</strong> ${currentPost.skills || '未設定'}</div>
+            </div>
+
+            <div class="chara-content">${currentPost.content}</div>
+            <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right;">投稿日時: ${currentPost.created_at || '不明'}</div>
+        `;
+    }
+
+    function openEditModal() {
+        document.getElementById('editTitle').value = currentPost.title;
+        document.getElementById('editStatus').value = currentPost.status || 'public';
+        document.getElementById('editGender').value = currentPost.gender || '';
+        document.getElementById('editAge').value = currentPost.age || '';
+        document.getElementById('editOccupation').value = currentPost.occupation || '';
+        document.getElementById('editOrigin').value = currentPost.origin || '';
+        document.getElementById('editSkills').value = currentPost.skills || '';
+        document.getElementById('editContent').value = currentPost.content || '';
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveEdit() {
+        const savedUser = localStorage.getItem('currentUser');
+        const currentUser = savedUser ? JSON.parse(savedUser) : null;
+        if (!currentUser) {
+            alert('ログインしてください。');
+            return;
+        }
+
+        const payload = {
+            id: charaId,
+            username: currentUser.username,
+            title: document.getElementById('editTitle').value,
+            status: document.getElementById('editStatus').value,
+            gender: document.getElementById('editGender').value,
+            age: document.getElementById('editAge').value,
+            occupation: document.getElementById('editOccupation').value,
+            origin: document.getElementById('editOrigin').value,
+            skills: document.getElementById('editSkills').value,
+            content: document.getElementById('editContent').value
+        };
+
+        try {
+            const res = await fetch('/api/manage', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                alert('更新しました！');
+                closeEditModal();
+                fetchCharaDetail();
+            } else {
+                alert('エラー: ' + result.error);
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    async function toggleStatus() {
+        const savedUser = localStorage.getItem('currentUser');
+        const currentUser = savedUser ? JSON.parse(savedUser) : null;
+        if (!currentUser) return;
+
+        const newStatus = currentPost.status === 'private' ? 'public' : 'private';
+        try {
+            const res = await fetch('/api/manage', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: charaId, username: currentUser.username, status: newStatus })
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                currentPost.status = newStatus;
+                renderPage();
+            } else {
+                alert('エラー: ' + result.error);
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    async function deletePost() {
+        const savedUser = localStorage.getItem('currentUser');
+        const currentUser = savedUser ? JSON.parse(savedUser) : null;
+        if (!currentUser) {
+            alert('ログインしてください。');
+            return;
+        }
+
+        if (!confirm('本当にこのキャラクターを削除しますか？（IDは再利用されません）')) return;
+
+        try {
+            const res = await fetch(`/api/manage?id=${charaId}&username=${encodeURIComponent(currentUser.username)}`, {
+                method: 'DELETE'
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                alert('削除しました。');
+                location.href = '/';
+            } else {
+                alert('エラー: ' + result.error);
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    fetchCharaDetail();
 </script>
 
 </body>
