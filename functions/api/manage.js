@@ -12,8 +12,20 @@ export async function onRequest(context) {
         // 1. 削除処理 (DELETE)
         if (method === "DELETE") {
             const id = url.searchParams.get("id");
-            if (!id) {
-                return new Response(JSON.stringify({ success: false, error: "IDが指定されていません" }), { status: 400, headers });
+            const username = url.searchParams.get("username"); // リクエストしたユーザー名
+
+            if (!id || !username) {
+                return new Response(JSON.stringify({ success: false, error: "必要な情報が不足しています" }), { status: 400, headers });
+            }
+
+            // 念のため、DBから対象の作品の作者を引いて本人かチェック
+            const post = await env.DB.prepare("SELECT author FROM posts WHERE id = ?").bind(id).first();
+            if (!post) {
+                return new Response(JSON.stringify({ success: false, error: "作品が見つかりません" }), { status: 404, headers });
+            }
+
+            if (post.author !== username) {
+                return new Response(JSON.stringify({ success: false, error: "権限がありません（作者本人のみ削除できます）" }), { status: 403, headers });
             }
 
             await env.DB.prepare("DELETE FROM posts WHERE id = ?").bind(id).run();
@@ -23,13 +35,23 @@ export async function onRequest(context) {
         // 2. 編集・非公開切り替え処理 (PUT または POST)
         if (method === "PUT" || method === "POST") {
             const body = await request.json();
-            const { id, title, content, status, gender, age, occupation, origin, skills } = body;
+            const { id, username, title, content, status, gender, age, occupation, origin, skills } = body;
 
-            if (!id) {
-                return new Response(JSON.stringify({ success: false, error: "IDが指定されていません" }), { status: 400, headers });
+            if (!id || !username) {
+                return new Response(JSON.stringify({ success: false, error: "必要な情報が不足しています" }), { status: 400, headers });
             }
 
-            // データベースの該当作品を更新（送られてきた項目だけ上書き）
+            // DBから対象の作品の作者を引いて本人かチェック
+            const post = await env.DB.prepare("SELECT author FROM posts WHERE id = ?").bind(id).first();
+            if (!post) {
+                return new Response(JSON.stringify({ success: false, error: "作品が見つかりません" }), { status: 404, headers });
+            }
+
+            if (post.author !== username) {
+                return new Response(JSON.stringify({ success: false, error: "権限がありません（作者本人のみ編集できます）" }), { status: 403, headers });
+            }
+
+            // データベースの該当作品を更新
             await env.DB.prepare(`
                 UPDATE posts 
                 SET title = COALESCE(?, title),
