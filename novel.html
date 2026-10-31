@@ -32,13 +32,11 @@
 </div>
 
 <script>
-    // 1. URLのパス（/novel/5 など）またはクエリ（?id=5 など）から柔軟にIDを抽出する
     const urlParams = new URLSearchParams(window.location.search);
     let novelId = urlParams.get('id');
 
     if (!novelId) {
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
-        // パスが ['novel', '5'] なら 5 を取得
         const novelIndex = pathSegments.indexOf('novel');
         if (novelIndex !== -1 && pathSegments.length > novelIndex + 1) {
             novelId = pathSegments[novelIndex + 1];
@@ -47,12 +45,10 @@
         }
     }
 
-    // 2. IDが取得できなかった場合や無効な場合のガード処理
     const container = document.getElementById('novelDetailContainer');
     if (!novelId || novelId === 'novel' || isNaN(novelId)) {
         container.innerHTML = `
             <p style="text-align:center; color:#e74c3c;">小説のIDが正しく指定されていません。</p>
-            <p style="text-align:center; font-size:12px; color:#888;">現在のURL: ${window.location.pathname}</p>
             <div style="text-align:center; margin-top:20px;">
                 <a href="/" class="nav-btn" style="background:#3498db; text-decoration:none; padding:10px 20px; border-radius:6px; display:inline-block; color:white;">ホームに戻る</a>
             </div>
@@ -60,7 +56,6 @@
         throw new Error("ID未指定のため停止");
     }
 
-    // 3. APIからデータを取得して画面に表示する
     async function fetchNovelDetail() {
         try {
             const res = await fetch(`/api/detail?type=post&target_type=novel&id=${novelId}`);
@@ -76,7 +71,7 @@
             container.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <span class="badge-novel">小説・シナリオ</span>
-                    <span style="font-size: 13px; color: #666;">作者: <a href="/user/${post.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${post.author}</a> (ID: ${post.id})</span>
+                    <span style="font-size: 13px; color: #666;">作者: <a href="/user.html?username=${post.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${post.author}</a> (ID: ${post.id})</span>
                 </div>
                 <h2>${post.title}</h2>
                 <div class="novel-content">${post.content}</div>
