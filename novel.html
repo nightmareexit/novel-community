@@ -107,17 +107,27 @@
     }
 
     function renderPage() {
-        // 簡易的に自分がオーナーか判定（必要に応じてlocalStorageや認証情報と連携できます）
-        // ここでは全ユーザーが自分の作品として操作できるようボタンを表示しつつ、API側で保護する仕組みにしています
+        // ログイン中のユーザー情報を取得
+        const savedUser = localStorage.getItem('currentUser');
+        const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+        // 本人、または管理者(idenなど)のときだけ true になる
+        const isOwner = currentUser && (currentUser.username === currentPost.author || currentUser.role === 'admin');
+
         const statusBadge = currentPost.status === 'private' ? '<span style="background:#e74c3c; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">非公開</span>' : '';
 
-        container.innerHTML = `
+        // 本人の場合のみ管理パネルのHTMLを表示する
+        const managePanelHtml = isOwner ? `
             <div class="manage-panel">
                 <span style="font-size:12px; font-weight:bold; color:#555;">🛠️ 管理メニュー:</span>
                 <button class="btn-edit" onclick="openEditModal()">✏️ 編集</button>
                 <button class="btn-private" onclick="toggleStatus()">${currentPost.status === 'private' ? '🔓 公開にする' : '🔒 非公開にする'}</button>
                 <button class="btn-delete" onclick="deletePost()">🗑️ 削除</button>
             </div>
+        ` : '';
+
+        container.innerHTML = `
+            ${managePanelHtml}
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <div><span class="badge-novel">小説・シナリオ</span>${statusBadge}</div>
@@ -156,7 +166,7 @@
             if (result.success) {
                 alert('更新しました！');
                 closeEditModal();
-                fetchNovelDetail(); // 画面を再読み込み
+                fetchNovelDetail();
             } else {
                 alert('エラー: ' + result.error);
             }
