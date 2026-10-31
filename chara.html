@@ -6,10 +6,28 @@
     <title>キャラクター詳細 - 創作・キャラクター投稿コミュニティ</title>
     <style>
         body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
-        nav { background: #2c3e50; color: white; padding: 10px; display: flex; overflow-x: auto; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .nav-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; text-decoration: none; }
-        .nav-btn:hover { background: #3498db; }
-        .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* 全体レイアウト */
+        .app-layout { display: flex; min-height: 100vh; position: relative; }
+        
+        /* pixiv風サイドバー */
+        sidebar { width: 220px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; flex-shrink: 0; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; padding-left: 5px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .side-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .side-btn:hover { background: #f0f3f6; color: #3498db; }
+        .side-btn.active { background: #eef2f7; color: #3498db; }
+        
+        .btn-create-main { background: #3498db; color: white !important; border-radius: 8px; text-align: center; justify-content: center; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+        .btn-create-main:hover { background: #2980b9 !important; }
+
+        /* スマホ用ハンバーガーボタン */
+        .menu-toggle { display: none; background: #2c3e50; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 6px; cursor: pointer; position: fixed; top: 12px; left: 12px; z-index: 1100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
+
+        /* メインコンテンツ領域 */
+        .main-content { flex: 1; padding: 25px; max-width: 750px; margin: 0 auto; box-sizing: border-box; }
+        
         h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 10px; margin-top: 0; }
         .badge-chara { background: #3498db; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
         .chara-meta { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e1e4e8; margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
@@ -18,29 +36,46 @@
         .btn-edit { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-private { background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        /* モーダル用スタイル */
+        
         #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
         .modal-content input, .modal-content textarea, .modal-content select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            sidebar { position: fixed; left: -240px; top: 0; height: 100vh; width: 220px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); padding-top: 60px; }
+            sidebar.open { left: 0; }
+            .sidebar-overlay.open { display: block; }
+            .main-content { padding: 60px 15px 20px 15px; }
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <a href="/" class="nav-btn">ホーム</a>
-    <a href="/create" class="nav-btn">作成</a>
-    <a href="/profile" class="nav-btn">プロフィール</a>
-</nav>
+<button class="menu-toggle" onclick="toggleSidebar()">☰ メニュー</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<div class="container">
-    <a href="/" class="nav-btn" style="background:#7f8c8d; display:inline-block; margin-bottom:15px; text-decoration:none;">← ホームに戻る</a>
-    
-    <div id="charaDetailContainer">
-        <p style="text-align:center; color:#777;">読み込み中...</p>
+<div class="app-layout">
+    <sidebar id="appSidebar">
+        <div class="logo-area">
+            <span>🎨 創作コミュニティ</span>
+            <span style="cursor:pointer; font-size:18px; padding: 0 5px;" onclick="toggleSidebar()">✕</span>
+        </div>
+        <a href="/create" class="side-btn btn-create-main">＋ 作成する</a>
+        <a href="/" class="side-btn">🏠 ホーム</a>
+        <a href="/profile" class="side-btn">👤 プロフィール</a>
+        <a href="/bookmarks.html" class="side-btn">🔖 ブックマーク</a>
+    </sidebar>
+
+    <div class="main-content">
+        <a href="/" class="side-btn" style="background:#7f8c8d; color:white; display:inline-block; margin-bottom:15px; padding:6px 12px; width:auto; border-radius:6px; text-decoration:none; font-size:13px;">← ホームに戻る</a>
+        
+        <div id="charaDetailContainer">
+            <p style="text-align:center; color:#777;">読み込み中...</p>
+        </div>
     </div>
 </div>
 
-<!-- 編集モーダル -->
 <div id="editModal">
     <div class="modal-content">
         <h3>✏️ キャラクターの編集</h3>
@@ -72,13 +107,20 @@
         <textarea id="editContent" rows="6"></textarea>
         
         <div style="text-align: right; gap: 8px; display: flex; justify-content: flex-end;">
-            <button onclick="closeEditModal()" class="nav-btn" style="background:#7f8c8d; cursor:pointer;">キャンセル</button>
+            <button onclick="closeEditModal()" class="side-btn" style="background:#7f8c8d; color:white; padding:8px 14px; width:auto; display:inline-block; cursor:pointer;">キャンセル</button>
             <button onclick="saveEdit()" class="btn-edit" style="padding: 8px 16px;">保存する</button>
         </div>
     </div>
 </div>
 
 <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     let charaId = urlParams.get('id');
 
@@ -97,7 +139,7 @@
         container.innerHTML = `
             <p style="text-align:center; color:#e74c3c;">キャラクターのIDが正しく指定されていません。</p>
             <div style="text-align:center; margin-top:20px;">
-                <a href="/" class="nav-btn" style="background:#3498db; text-decoration:none; padding:10px 20px; border-radius:6px; display:inline-block; color:white;">ホームに戻る</a>
+                <a href="/" class="side-btn" style="background:#3498db; color:white; display:inline-block; padding:10px 20px; border-radius:6px; text-decoration:none;">ホームに戻る</a>
             </div>
         `;
         throw new Error("ID未指定のため停止");
@@ -125,8 +167,6 @@
     function renderPage() {
         const savedUser = localStorage.getItem('currentUser');
         const currentUser = savedUser ? JSON.parse(savedUser) : null;
-
-        // 本人のみ true になる厳格なガード
         const isOwner = currentUser && currentUser.username === currentPost.author;
 
         const statusBadge = currentPost.status === 'private' ? '<span style="background:#e74c3c; color:white; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px;">非公開</span>' : '';
@@ -181,10 +221,7 @@
     async function saveEdit() {
         const savedUser = localStorage.getItem('currentUser');
         const currentUser = savedUser ? JSON.parse(savedUser) : null;
-        if (!currentUser) {
-            alert('ログインしてください。');
-            return;
-        }
+        if (!currentUser) { alert('ログインしてください。'); return; }
 
         const payload = {
             id: charaId,
@@ -206,17 +243,12 @@
                 body: JSON.stringify(payload)
             });
             const result = await res.json();
-
             if (result.success) {
                 alert('更新しました！');
                 closeEditModal();
                 fetchCharaDetail();
-            } else {
-                alert('エラー: ' + result.error);
-            }
-        } catch (err) {
-            alert('通信エラーが発生しました。');
-        }
+            } else { alert('エラー: ' + result.error); }
+        } catch (err) { alert('通信エラーが発生しました。'); }
     }
 
     async function toggleStatus() {
@@ -232,43 +264,24 @@
                 body: JSON.stringify({ id: charaId, username: currentUser.username, status: newStatus })
             });
             const result = await res.json();
-
-            if (result.success) {
-                currentPost.status = newStatus;
-                renderPage();
-            } else {
-                alert('エラー: ' + result.error);
-            }
-        } catch (err) {
-            alert('通信エラーが発生しました。');
-        }
+            if (result.success) { currentPost.status = newStatus; renderPage(); }
+            else { alert('エラー: ' + result.error); }
+        } catch (err) { alert('通信エラーが発生しました。'); }
     }
 
     async function deletePost() {
         const savedUser = localStorage.getItem('currentUser');
         const currentUser = savedUser ? JSON.parse(savedUser) : null;
-        if (!currentUser) {
-            alert('ログインしてください。');
-            return;
-        }
+        if (!currentUser) { alert('ログインしてください。'); return; }
 
-        if (!confirm('本当にこのキャラクターを削除しますか？（IDは再利用されません）')) return;
+        if (!confirm('本当にこのキャラクターを削除しますか？')) return;
 
         try {
-            const res = await fetch(`/api/manage?id=${charaId}&username=${encodeURIComponent(currentUser.username)}`, {
-                method: 'DELETE'
-            });
+            const res = await fetch(`/api/manage?id=${charaId}&username=${encodeURIComponent(currentUser.username)}`, { method: 'DELETE' });
             const result = await res.json();
-
-            if (result.success) {
-                alert('削除しました。');
-                location.href = '/';
-            } else {
-                alert('エラー: ' + result.error);
-            }
-        } catch (err) {
-            alert('通信エラーが発生しました。');
-        }
+            if (result.success) { alert('削除しました。'); location.href = '/'; }
+            else { alert('エラー: ' + result.error); }
+        } catch (err) { alert('通信エラーが発生しました。'); }
     }
 
     fetchCharaDetail();
