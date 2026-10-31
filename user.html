@@ -41,6 +41,7 @@
     const pathParts = window.location.pathname.split('/');
     const userParam = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
 
+    
     async function fetchUserProfile() {
         const container = document.getElementById('userContainer');
         if (!userParam) {
