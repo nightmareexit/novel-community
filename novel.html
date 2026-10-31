@@ -131,12 +131,13 @@
             </div>
         ` : '';
 
+        // ▼ ここを /profile.html に修正済み！
         container.innerHTML = `
             ${managePanelHtml}
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <div><span class="badge-novel">小説・シナリオ</span>${statusBadge}</div>
-                <span style="font-size: 13px; color: #666;">作者: <a href="/user.html?username=${currentPost.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${currentPost.author}</a> (ID: ${currentPost.id})</span>
+                <span style="font-size: 13px; color: #666;">作者: <a href="/profile.html?username=${currentPost.author}" style="color: #9b59b6; text-decoration: none; font-weight: bold;">${currentPost.author}</a> (ID: ${currentPost.id})</span>
             </div>
             <h2>${currentPost.title}</h2>
             <div class="novel-content">${currentPost.content}</div>
