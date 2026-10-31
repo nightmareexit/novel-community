@@ -49,7 +49,8 @@
             posts.forEach(post => {
                 const card = document.createElement('div');
                 card.className = 'post-card';
-                // カードをクリックしたら個別ページへ飛ぶようにする準備
+                
+                // カードをクリックしたらそれぞれの個別ページへ飛ぶように振り分け
                 card.onclick = () => {
                     if (post.type === 'character') {
                         location.href = `/chara/${post.id}`;
