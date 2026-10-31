@@ -1,9 +1,10 @@
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const type = url.searchParams.get('type'); // 'post' または 'user'
-  const id = url.searchParams.get('id');       // 取得したいID
-  const username = url.searchParams.get('username'); // ユーザー名で検索する場合
+  const type = url.searchParams.get('type'); // 'post' (または 'character'/'novel') の詳細、または 'user'
+  const id = url.searchParams.get('id');       // 欲しいID (例: 1, 2...)
+  const targetType = url.searchParams.get('target_type'); // 'character' または 'novel'
+  const username = url.searchParams.get('username');
   
   const headers = { 
     "Content-Type": "application/json",
@@ -11,18 +12,23 @@ export async function onRequest(context) {
   };
 
   try {
-    // ① 作品（キャラシ・小説）の個別データを取得する
+    // ① 作品（キャラシ・小説）の個別データを、種類ごとの独立したIDで取得する
     if (type === 'post') {
-      if (!id) {
-        return Response.json({ error: "IDが指定されていません" }, { status: 400, headers });
+      if (!id || !targetType) {
+        return Response.json({ error: "IDまたはタイプが指定されていません" }, { status: 400, headers });
       }
 
-      const post = await env.DB.prepare(
-        "SELECT * FROM posts WHERE id = ?"
-      ).bind(id).first();
+      // 該当するタイプ（character または novel）の投稿を古い順にすべて取得する
+      const { results: posts } = await env.DB.prepare(
+        "SELECT * FROM posts WHERE type = ? ORDER BY id ASC"
+      ).bind(targetType).all();
+
+      // 指定された番号（例: IDが1なら配列の0番目）のデータを取り出す
+      const index = parseInt(id) - 1;
+      const post = posts[index];
 
       if (!post) {
-        return Response.json({ error: "作品が見つかりませんでした" }, { status: 404, headers });
+        return Response.json({ error: "該当する作品が見つかりませんでした" }, { status: 404, headers });
       }
 
       return Response.json({ success: true, post }, { headers });
@@ -41,7 +47,6 @@ export async function onRequest(context) {
         return Response.json({ error: "ユーザーが見つかりませんでした" }, { status: 404, headers });
       }
 
-      // このユーザーの投稿一覧も一緒に取得する
       const { results: posts } = await env.DB.prepare(
         "SELECT * FROM posts WHERE author = ? ORDER BY id DESC"
       ).bind(user.username).all();
