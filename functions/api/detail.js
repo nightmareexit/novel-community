@@ -1,9 +1,8 @@
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const type = url.searchParams.get('type'); // 'post' (または 'character'/'novel') の詳細、または 'user'
-  const id = url.searchParams.get('id');       // 欲しいID (例: 1, 2...)
-  const targetType = url.searchParams.get('target_type'); // 'character' または 'novel'
+  const type = url.searchParams.get('type');
+  const id = url.searchParams.get('id');
   const username = url.searchParams.get('username');
   
   const headers = { 
@@ -12,20 +11,16 @@ export async function onRequest(context) {
   };
 
   try {
-    // ① 作品（キャラシ・小説）の個別データを、種類ごとの独立したIDで取得する
+    // ① 作品（キャラシ・小説共通）の個別データをIDで直接取得する
     if (type === 'post') {
-      if (!id || !targetType) {
-        return Response.json({ error: "IDまたはタイプが指定されていません" }, { status: 400, headers });
+      if (!id) {
+        return Response.json({ error: "IDが指定されていません" }, { status: 400, headers });
       }
 
-      // 該当するタイプ（character または novel）の投稿を古い順にすべて取得する
-      const { results: posts } = await env.DB.prepare(
-        "SELECT * FROM posts WHERE type = ? ORDER BY id ASC"
-      ).bind(targetType).all();
-
-      // 指定された番号（例: IDが1なら配列の0番目）のデータを取り出す
-      const index = parseInt(id) - 1;
-      const post = posts[index];
+      // データベースのIDで直接1件引く
+      const post = await env.DB.prepare(
+        "SELECT * FROM posts WHERE id = ?"
+      ).bind(id).first();
 
       if (!post) {
         return Response.json({ error: "該当する作品が見つかりませんでした" }, { status: 404, headers });
@@ -34,7 +29,7 @@ export async function onRequest(context) {
       return Response.json({ success: true, post }, { headers });
     }
 
-    // ② ユーザーのプロフィールと、そのユーザーの投稿一覧を取得する
+    // ② ユーザーのプロフィールと投稿一覧を取得する
     if (type === 'user') {
       let user = null;
       if (id) {
