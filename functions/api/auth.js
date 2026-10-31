@@ -85,6 +85,24 @@ export async function onRequest(context) {
       return Response.json({ success: true, user: updatedUser }, { headers });
     }
 
+    // ④ ユーザー情報取得 (getuser)
+    if (action === "getuser" && request.method === "GET") {
+      const username = url.searchParams.get('username');
+      if (!username) {
+        return Response.json({ error: "ユーザー名が必要です" }, { status: 400, headers });
+      }
+
+      const user = await env.DB.prepare(
+        "SELECT id, username, role, badges, bio, avatar, selected_badges FROM users WHERE username = ?"
+      ).bind(username).first();
+
+      if (!user) {
+        return Response.json({ error: "ユーザーが見つかりません" }, { status: 404, headers });
+      }
+
+      return Response.json({ success: true, user }, { headers });
+    }
+
     return Response.json({ error: "Invalid action or method" }, { status: 400, headers });
 
   } catch (err) {
