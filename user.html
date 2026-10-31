@@ -6,10 +6,28 @@
     <title>ユーザープロフィール - 創作・キャラクター投稿コミュニティ</title>
     <style>
         body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
-        nav { background: #2c3e50; color: white; padding: 10px; display: flex; overflow-x: auto; gap: 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .nav-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: bold; text-decoration: none; }
-        .nav-btn:hover { background: #3498db; }
-        .container { max-width: 700px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* 全体レイアウト */
+        .app-layout { display: flex; min-height: 100vh; position: relative; }
+        
+        /* pixiv風サイドバー */
+        sidebar { width: 220px; background: #ffffff; border-right: 1px solid #e1e4e8; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; flex-shrink: 0; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; padding-left: 5px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .side-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: bold; transition: 0.2s; }
+        .side-btn:hover { background: #f0f3f6; color: #3498db; }
+        .side-btn.active { background: #eef2f7; color: #3498db; }
+        
+        .btn-create-main { background: #3498db; color: white !important; border-radius: 8px; text-align: center; justify-content: center; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+        .btn-create-main:hover { background: #2980b9 !important; }
+
+        /* スマホ用ハンバーガーボタン */
+        .menu-toggle { display: none; background: #2c3e50; color: white; border: none; padding: 8px 12px; font-size: 14px; border-radius: 6px; cursor: pointer; position: fixed; top: 12px; left: 12px; z-index: 1100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
+
+        /* メインコンテンツ領域 */
+        .main-content { flex: 1; padding: 25px; max-width: 750px; margin: 0 auto; box-sizing: border-box; }
+        
         .pixiv-profile-header { background: linear-gradient(135deg, #3498db, #9b59b6); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
         .pixiv-avatar { width: 80px; height: 80px; background: #fff; color: #333; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 10px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .user-badge { display: inline-block; background: #f39c12; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-right: 4px; margin-bottom: 4px; }
@@ -18,26 +36,50 @@
         .post-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 8px; }
         .badge { background: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
         .badge-novel { background: #9b59b6; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            sidebar { position: fixed; left: -240px; top: 0; height: 100vh; width: 220px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); padding-top: 60px; }
+            sidebar.open { left: 0; }
+            .sidebar-overlay.open { display: block; }
+            .main-content { padding: 60px 15px 20px 15px; }
+        }
     </style>
 </head>
 <body>
 
-<nav>
-    <a href="/" class="nav-btn">ホーム</a>
-    <a href="/create" class="nav-btn">作成</a>
-    <a href="/profile" class="nav-btn">プロフィール</a>
-</nav>
+<button class="menu-toggle" onclick="toggleSidebar()">☰ メニュー</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<div class="container">
-    <a href="/" class="nav-btn" style="background:#7f8c8d; display:inline-block; margin-bottom:15px; text-decoration:none;">← ホームに戻る</a>
-    
-    <div id="userContainer">
-        <p style="text-align:center; color:#777;">読み込み中...</p>
+<div class="app-layout">
+    <sidebar id="appSidebar">
+        <div class="logo-area">
+            <span>🎨 創作コミュニティ</span>
+            <span style="cursor:pointer; font-size:18px; padding: 0 5px;" onclick="toggleSidebar()">✕</span>
+        </div>
+        <a href="/create" class="side-btn btn-create-main">＋ 作成する</a>
+        <a href="/" class="side-btn">🏠 ホーム</a>
+        <a href="/profile" class="side-btn">👤 プロフィール</a>
+        <a href="/bookmarks.html" class="side-btn">🔖 ブックマーク</a>
+    </sidebar>
+
+    <div class="main-content">
+        <a href="/" class="side-btn" style="background:#7f8c8d; color:white; display:inline-block; margin-bottom:15px; padding:6px 12px; width:auto; border-radius:6px; text-decoration:none; font-size:13px;">← ホームに戻る</a>
+        
+        <div id="userContainer">
+            <p style="text-align:center; color:#777;">読み込み中...</p>
+        </div>
     </div>
 </div>
 
 <script>
-    // 1. クエリパラメータ（?username=iden または ?id=1）またはパスから柔軟にユーザー情報を取得する
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     let userParam = urlParams.get('username') || urlParams.get('id');
 
@@ -59,7 +101,6 @@
         }
 
         try {
-            // パラメータが数字ならID、文字ならusernameとしてAPIを叩く
             const isId = !isNaN(userParam);
             const queryKey = isId ? `id=${userParam}` : `username=${userParam}`;
             
