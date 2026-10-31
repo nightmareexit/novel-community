@@ -55,7 +55,7 @@
 <div class="app-layout">
     <div class="main-content">
         <!-- ログイン・新規登録エリア -->
-        <div id="authContainer">
+        <div id="authContainer" style="display: none;">
             <div class="sub-tab-container">
                 <button class="sub-tab-btn active" onclick="switchAuthTab('login')">🔑 ログイン</button>
                 <button class="sub-tab-btn" onclick="switchAuthTab('signup')">📝 新規登録</button>
@@ -90,7 +90,7 @@
             </div>
         </div>
 
-        <!-- ログイン後のプロフィールーム -->
+        <!-- プロフィール表示エリア -->
         <div id="profileContainer" style="display: none;">
             <div class="pixiv-profile-header">
                 <div class="pixiv-avatar" id="profileAvatar">I</div>
@@ -100,8 +100,8 @@
                 <div id="profileBadges" style="margin-top: 10px;"></div>
             </div>
 
-            <!-- プロフィール編集カード -->
-            <div class="edit-card">
+            <!-- プロフィール編集カード（自分自身の時だけ表示） -->
+            <div class="edit-card" id="editCardSection" style="display: none;">
                 <h3>⚙️ プロフィール編集</h3>
                 <div class="form-group">
                     <label>アイコン画像変更</label>
@@ -118,11 +118,11 @@
                 <button type="button" class="btn-action" onclick="saveProfile()">プロフィールを保存する</button>
             </div>
 
-            <div style="text-align: right; margin-bottom: 15px;">
+            <div style="text-align: right; margin-bottom: 15px; display: none;" id="logoutBtnContainer">
                 <button onclick="logout()" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">ログアウト</button>
             </div>
 
-            <h3>📁 あなたの投稿作品</h3>
+            <h3 id="postsSectionTitle">📁 あなたの投稿作品</h3>
             <div id="myPostsList">読み込み中...</div>
         </div>
     </div>
@@ -132,7 +132,35 @@
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     let newAvatarBase64 = '';
 
-    updateProfileView();
+    // URLのクエリパラメータから指定されたユーザー名を取得 (例: profile.html?username=tywwy)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUsername = urlParams.get('username');
+
+    initPage();
+
+    async function initPage() {
+        if (targetUsername) {
+            // 他のユーザーのプロフィールを表示する場合
+            try {
+                const res = await fetch(`/api/auth?action=getuser&username=${encodeURIComponent(targetUsername)}`);
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    renderProfile(result.user, false);
+                } else {
+                    document.querySelector('.main-content').innerHTML = `<h2>エラー</h2><p>${result.error || 'ユーザーが見つかりませんでした。'}</p><a href="/profile.html">自分のプロフィールへ戻る</a>`;
+                }
+            } catch (err) {
+                document.querySelector('.main-content').innerHTML = `<h2>通信エラー</h2><p>データの取得に失敗しました。</p>`;
+            }
+        } else {
+            // 自分自身のプロフィールを表示する場合
+            if (!currentUser) {
+                document.getElementById('authContainer').style.display = 'block';
+            } else {
+                renderProfile(currentUser, true);
+            }
+        }
+    }
 
     function switchAuthTab(type) {
         const btns = document.querySelectorAll('#authContainer .sub-tab-btn');
@@ -165,7 +193,7 @@
                 alert(result.message || '登録成功！');
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                updateProfileView();
+                renderProfile(currentUser, true);
             } else {
                 alert('エラー: ' + (result.error || '登録に失敗しました'));
             }
@@ -188,7 +216,7 @@
                 alert('ログイン成功！おかえりなさい、' + result.user.username + 'さん！');
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                updateProfileView();
+                renderProfile(currentUser, true);
             } else {
                 alert('エラー: ' + (result.error || 'ログインに失敗しました'));
             }
@@ -198,8 +226,7 @@
     function logout() {
         currentUser = null;
         localStorage.removeItem('currentUser');
-        updateProfileView();
-        alert('ログアウトしました');
+        location.href = '/profile.html';
     }
 
     function previewAvatar(event) {
@@ -215,38 +242,51 @@
         reader.readAsDataURL(file);
     }
 
-    function updateProfileView() {
-        const authContainer = document.getElementById('authContainer');
-        const profileContainer = document.getElementById('profileContainer');
+    function renderProfile(user, isSelf) {
+        document.getElementById('authContainer').style.display = 'none';
+        document.getElementById('profileContainer').style.display = 'block';
 
-        if (!currentUser) {
-            authContainer.style.display = 'block';
-            profileContainer.style.display = 'none';
+        document.getElementById('profileName').textContent = user.username;
+        document.getElementById('profileRole').textContent = `権限: ${user.role || 'user'} (ID: ${user.id})`;
+        document.getElementById('profileBio').textContent = user.bio || '自己紹介がまだ設定されていません。';
+
+        const avatarEl = document.getElementById('profileAvatar');
+        if (user.avatar) {
+            avatarEl.style.backgroundImage = `url(${user.avatar})`;
+            avatarEl.textContent = '';
+            newAvatarBase64 = user.avatar;
         } else {
-            authContainer.style.display = 'none';
-            profileContainer.style.display = 'block';
+            avatarEl.style.backgroundImage = '';
+            avatarEl.textContent = user.username.charAt(0).toUpperCase();
+        }
 
-            document.getElementById('profileName').textContent = currentUser.username;
-            document.getElementById('profileRole').textContent = `権限: ${currentUser.role || 'user'} (ID: ${currentUser.id})`;
-            document.getElementById('profileBio').textContent = currentUser.bio || '自己紹介がまだ設定されていません。';
-            document.getElementById('editBio').value = currentUser.bio || '';
+        // バッヂの表示計算
+        const ownedBadges = user.badges ? user.badges.split(',').map(b => b.trim()).filter(Boolean) : [];
+        const selectedBadges = user.selected_badges ? user.selected_badges.split(',').map(b => b.trim()).filter(Boolean) : ownedBadges;
+        const displayBadges = selectedBadges.length > 0 ? selectedBadges : ownedBadges;
 
-            const avatarEl = document.getElementById('profileAvatar');
-            if (currentUser.avatar) {
-                avatarEl.style.backgroundImage = `url(${currentUser.avatar})`;
-                avatarEl.textContent = '';
-                newAvatarBase64 = currentUser.avatar;
-            } else {
-                avatarEl.style.backgroundImage = '';
-                avatarEl.textContent = currentUser.username.charAt(0).toUpperCase();
-            }
+        const badgesDiv = document.getElementById('profileBadges');
+        badgesDiv.innerHTML = '';
+        if (displayBadges.length > 0) {
+            displayBadges.forEach(b => {
+                const span = document.createElement('span');
+                span.className = 'user-badge';
+                span.textContent = b;
+                badgesDiv.appendChild(span);
+            });
+        } else {
+            badgesDiv.innerHTML = '<span style="font-size:12px; opacity:0.8;">バッジなし</span>';
+        }
 
-            // 所持バッヂのチェックボックス生成
+        // 自分自身のプロフィールの場合のみ編集カードとログアウトボタンを表示
+        if (isSelf) {
+            document.getElementById('editCardSection').style.display = 'block';
+            document.getElementById('logoutBtnContainer').style.display = 'block';
+            document.getElementById('editBio').value = user.bio || '';
+            document.getElementById('postsSectionTitle').textContent = '📁 あなたの投稿作品';
+
             const badgeContainer = document.getElementById('badgeCheckboxes');
             badgeContainer.innerHTML = '';
-            const ownedBadges = currentUser.badges ? currentUser.badges.split(',').map(b => b.trim()).filter(Boolean) : [];
-            const selectedBadges = currentUser.selected_badges ? currentUser.selected_badges.split(',').map(b => b.trim()).filter(Boolean) : ownedBadges;
-
             if (ownedBadges.length === 0) {
                 badgeContainer.innerHTML = '<span style="font-size:12px; color:#777;">所持しているバッヂはありません。</span>';
             } else {
@@ -258,24 +298,13 @@
                     badgeContainer.appendChild(label);
                 });
             }
-
-            // プロフィールヘッダーの選択中バッヂ表示
-            const badgesDiv = document.getElementById('profileBadges');
-            badgesDiv.innerHTML = '';
-            const displayBadges = selectedBadges.length > 0 ? selectedBadges : ownedBadges;
-            if (displayBadges.length > 0) {
-                displayBadges.forEach(b => {
-                    const span = document.createElement('span');
-                    span.className = 'user-badge';
-                    span.textContent = b;
-                    badgesDiv.appendChild(span);
-                });
-            } else {
-                badgesDiv.innerHTML = '<span style="font-size:12px; opacity:0.8;">バッジなし</span>';
-            }
-
-            fetchMyPosts(currentUser.username);
+        } else {
+            document.getElementById('editCardSection').style.display = 'none';
+            document.getElementById('logoutBtnContainer').style.display = 'none';
+            document.getElementById('postsSectionTitle').textContent = `📁 ${user.username} さんの投稿作品`;
         }
+
+        fetchUserPosts(user.username);
     }
 
     async function saveProfile() {
@@ -304,7 +333,7 @@
                 alert('プロフィールを更新しました！');
                 currentUser = result.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                updateProfileView();
+                renderProfile(currentUser, true);
             } else {
                 alert('エラー: ' + (result.error || '更新に失敗しました'));
             }
@@ -313,21 +342,21 @@
         }
     }
 
-    async function fetchMyPosts(username) {
+    async function fetchUserPosts(username) {
         const myPostsList = document.getElementById('myPostsList');
         myPostsList.innerHTML = '<p style="text-align:center; color:#777;">読み込み中...</p>';
         try {
             const res = await fetch('/api/posts');
             const posts = await res.json();
-            const myPosts = posts.filter(p => p.author === username);
+            const userPosts = posts.filter(p => p.author === username);
 
-            if (myPosts.length === 0) {
+            if (userPosts.length === 0) {
                 myPostsList.innerHTML = '<p style="text-align:center; color:#777;">まだ投稿した作品はありません。</p>';
                 return;
             }
 
             myPostsList.innerHTML = '';
-            myPosts.forEach(post => {
+            userPosts.forEach(post => {
                 const card = document.createElement('div');
                 card.className = 'post-card';
                 card.innerHTML = `
