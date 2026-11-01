@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理パネル - 創作・キャラクター投稿コミュニティ</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        .app-layout { display: flex; min-height: 100vh; position: relative; }
+        .main-content { flex: 1; padding: 25px; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #f0f3f6; padding-bottom: 8px; margin-top: 0; }
+        .card { background: #fff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .btn { background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .result-item { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .badge-checkboxes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 8px; font-size: 13px; background: #fafafa; padding: 10px; border-radius: 6px; border: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<script src="/sidebar.js"></script>
+<script>
+    initSidebar('');
+</script>
+
+<div class="app-layout">
+    <div class="main-content" id="adminMainContent">
+        <h2>🔒 管理者専用パネル</h2>
+        <p id="accessStatus" style="color: #666; font-size: 14px;">権限を確認中...</p>
+
+        <div id="panelContent" style="display: none;">
+            <!-- ユーザー管理セクション -->
+            <div class="card">
+                <h3>👤 ユーザー管理・バッヂ付与</h3>
+                <div class="form-group">
+                    <label>ユーザー名 または IDで検索</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="userSearchQuery" placeholder="例: tywwy または 2">
+                        <button class="btn" onclick="searchUser()">検索</button>
+                    </div>
+                </div>
+                <div id="userSearchResult"></div>
+            </div>
+
+            <!-- 作品管理セクション -->
+            <div class="card">
+                <h3>📁 作品管理・削除 / 警告</h3>
+                <div class="form-group">
+                    <label>作品タイトル または IDで検索</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="postSearchQuery" placeholder="例: 冒険 または 1">
+                        <button class="btn" onclick="searchPost()">検索</button>
+                    </div>
+                </div>
+                <div id="postSearchResult"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const availableBadges = [
+        "管理者", "モデレーター", "スタッフ", "special thanks", 
+        "紅月の支配者", "Remember Love", "君主のご訪問", "愛を与えられた", "鬱病", "正体不明の視線"
+    ];
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+    async function checkAccess() {
+        const accessStatus = document.getElementById('accessStatus');
+        if (!currentUser) {
+            accessStatus.innerHTML = '<span style="color:red;">ログインしていません。管理者アカウントでログインしてください。</span>';
+            return;
+        }
+
+        // 簡易的にローカルの権限もチェックしつつ、API経由でアクセス権があるか検証
+        try {
+            const res = await fetch(`/api/admin?action=search_user&operator=${encodeURIComponent(currentUser.username)}&q=${encodeURIComponent(currentUser.username)}`);
+            const result = await res.json();
+            if (res.ok && result.success) {
+                document.getElementById('accessStatus').style.display = 'none';
+                document.getElementById('panelContent').style.display = 'block';
+            } else {
+                accessStatus.innerHTML = `<span style="color:red;">アクセス拒否: ${result.error || '権限がありません。'}</span>`;
+            }
+        } catch (err) {
+            accessStatus.innerHTML = '<span style="color:red;">権限確認中に通信エラーが発生しました。</span>';
+        }
+    }
+
+    checkAccess();
+
+    // --- ユーザー検索 ---
+    async function searchUser() {
+        const q = document.getElementById('userSearchQuery').value.trim();
+        if (!q) { alert('検索ワードを入力してください'); return; }
+
+        try {
+            const res = await fetch(`/api/admin?action=search_user&operator=${encodeURIComponent(currentUser.username)}&q=${encodeURIComponent(q)}`);
+            const result = await res.json();
+            const container = document.getElementById('userSearchResult');
+            if (!result.success || result.users.length === 0) {
+                container.innerHTML = '<p style="color:#777; font-size:13px;">ユーザーが見つかりませんでした。</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            result.users.forEach(u => {
+                const userBadges = u.badges ? u.badges.split(',').map(b => b.trim()) : [];
+                let checkboxesHtml = '';
+                availableBadges.forEach(b => {
+                    const isChecked = userBadges.includes(b) ? 'checked' : '';
+                    checkboxesHtml += `<label><input type="checkbox" class="edit-badge-chk-${u.id}" value="${b}" ${isChecked}> ${b}</label>`;
+                });
+
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong>ID: ${u.id} | ${u.username}</strong> (権限: ${u.role})<br>
+                        <div class="badge-checkboxes">${checkboxesHtml}</div>
+                    </div>
+                    <div>
+                        <button class="btn" onclick="saveUserBadges(${u.id}, '${u.username}')">保存・付与</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            alert('ユーザー検索に失敗しました。');
+        }
+    }
+
+    // --- ユーザーバッヂ保存 ---
+    async function saveUserBadges(id, username) {
+        const chks = document.querySelectorAll(`.edit-badge-chk-${id}:checked`);
+        const selected = [];
+        chks.forEach(c => selected.push(c.value));
+
+        // 権限の自動判定（管理人が含まれていればadmin、モデレーターならmoderator等にすることも可能）
+        let role = 'user';
+        if (selected.includes('管理者')) role = 'admin';
+        else if (selected.includes('モデレーター')) role = 'moderator';
+
+        try {
+            const res = await fetch(`/api/admin?action=update_user&operator=${encodeURIComponent(currentUser.username)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, username, badges: selected.join(', '), role })
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert(`${username} のバッヂ・権限を更新しました！`);
+                searchUser();
+            } else {
+                alert('エラー: ' + result.error);
+            }
+        } catch (err) {
+            alert('通信エラーが発生しました。');
+        }
+    }
+
+    // --- 作品検索 ---
+    async function searchPost() {
+        const q = document.getElementById('postSearchQuery').value.trim();
+        if (!q) { alert('検索ワードを入力してください'); return; }
+
+        try {
+            const res = await fetch(`/api/admin?action=search_post&operator=${encodeURIComponent(currentUser.username)}&q=${encodeURIComponent(q)}`);
+            const result = await res.json();
+            const container = document.getElementById('postSearchResult');
+            if (!result.success || result.posts.length === 0) {
+                container.innerHTML = '<p style="color:#777; font-size:13px;">作品が見つかりませんでした。</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            result.posts.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>[ID: ${p.id}] ${p.title}</strong> (${p.type})<br>
+                        <span style="font-size:12px; color:#666;">作者: ${p.author} | ステータス: ${p.status || 'public'}</span>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn" style="background:#f39c12;" onclick="togglePostStatus(${p.id}, '${p.status || 'public'}')">${p.status === 'private' ? '公開にする' : '非公開(警告)'}</button>
+                        <button class="btn btn-danger" onclick="deletePost(${p.id})">削除</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            alert('作品検索に失敗しました。');
+        }
+    }
+
+    // --- 作品削除 ---
+    async function deletePost(postId) {
+        if (!confirm('本当にこの作品を削除しますか？')) return;
+        try {
+            const res = await fetch(`/api/admin?action=delete_post&operator=${encodeURIComponent(currentUser.username)}&id=${postId}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (result.success) {
+                alert('作品を削除しました。');
+                searchPost();
+            } else { alert('エラー: ' + result.error); }
+        } catch (err) { alert('通信エラーが発生しました。'); }
+    }
+
+    // --- 作品ステータス変更（非公開・公開切り替え） ---
+    async function togglePostStatus(postId, currentStatus) {
+        const newStatus = currentStatus === 'private' ? 'public' : 'private';
+        try {
+            const res = await fetch(`/api/admin?action=update_post_status&operator=${encodeURIComponent(currentUser.username)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: postId, status: newStatus })
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert('ステータスを更新しました。');
+                searchPost();
+            } else { alert('エラー: ' + result.error); }
+        } catch (err) { alert('通信エラーが発生しました。'); }
+    }
+</script>
+
+</body>
+</html>
